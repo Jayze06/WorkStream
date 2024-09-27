@@ -16,22 +16,20 @@ import com.example.asstest1.viewmodel.HomeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun Home(navHostController: NavHostController){
-
+fun Home(navHostController: NavHostController) {
     val context = LocalContext.current
     val homeViewModel: HomeViewModel = viewModel()
-    val threadsAndUsers by homeViewModel.threadsAndUser.observeAsState(null)
+    val threadsAndUsers by homeViewModel.threadsAndUser.observeAsState(emptyList()) // Use an empty list as a default
 
     LazyColumn {
-        items(threadsAndUsers ?: emptyList()){ pairs ->
-            ThreadItem(thread = pairs.first, users = pairs.second, navHostController,
-                FirebaseAuth.getInstance().currentUser!!.uid)
+        items(threadsAndUsers) { pairs ->
+            // Use safe calls to ensure pairs.first and pairs.second are not null
+            ThreadItem(
+                thread = pairs.first,
+                users = pairs.second,
+                navHostController,
+                FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            )
         }
     }
-}
-
-@Preview
-@Composable
-fun ShowHome(){
-    //Home()
 }

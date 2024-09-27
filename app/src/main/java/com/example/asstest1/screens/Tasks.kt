@@ -64,7 +64,7 @@ fun Tasks(navController: NavController) {
     }
 }
 
-@Composable
+/*@Composable
 fun TaskItem(task: TaskModel, onClick: () -> Unit) {
     Card(
         modifier = Modifier
@@ -87,3 +87,4 @@ fun TaskItem(task: TaskModel, onClick: () -> Unit) {
         }
     }
 }
+*/

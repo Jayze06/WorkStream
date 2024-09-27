@@ -14,22 +14,33 @@ import androidx.navigation.NavController
 import com.example.asstest1.model.TaskModel
 import com.example.asstest1.viewmodel.TaskViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.asstest1.navigation.Routes
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetail(navController: NavController, taskId: String) {
     val taskViewModel: TaskViewModel = viewModel()
-
-    // Observe the list of tasks and find the specific task by its ID
     val tasks by taskViewModel.tasks.observeAsState(emptyList())
     val task = tasks.find { it.id == taskId }
 
-    // State variables to hold task details for editing
-    var title by remember { mutableStateOf(task?.title ?: "") }
-    var dueDate by remember { mutableStateOf(task?.dueDate ?: 0L) }
     var progress by remember { mutableStateOf(task?.progress ?: 0) }
 
-    // UI
+    // Create a map to hold memberId to username mapping
+    val userMap = remember { mutableStateMapOf<String, String>() }
+
+    // Fetch user data if task is available
+    task?.let {
+        it.assignedMembers.forEach { memberId ->
+            if (!userMap.containsKey(memberId)) {
+                // Assuming you have a method to fetch user details
+                taskViewModel.getUserById(memberId) { username ->
+                    userMap[memberId] = username ?: "Unknown User"
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -49,47 +60,36 @@ fun TaskDetail(navController: NavController, taskId: String) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
+                .padding(16.dp)
         ) {
-            if (task != null) {
-                // Task Title
-                Text(text = "Title", style = MaterialTheme.typography.bodyLarge)
-                BasicTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            task?.let {
+                Text("Title: ${it.title}")
 
-                // Task Due Date
-                Text(text = "Due Date (timestamp):", style = MaterialTheme.typography.bodyMedium)
-                BasicTextField(
-                    value = dueDate.toString(),
-                    onValueChange = { dueDate = it.toLongOrNull() ?: 0L },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Display progress bar
+                LinearProgressIndicator(progress = it.progress / 100f)
 
-                // Task Progress
-                Text(text = "Progress:", style = MaterialTheme.typography.bodyMedium)
-                BasicTextField(
-                    value = progress.toString(),
-                    onValueChange = { progress = it.toIntOrNull() ?: 0 },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Text("Progress: ${it.progress}%")
+
+                // List of members with usernames
+                Text("Assigned Members:")
+                it.assignedMembers.forEach { memberId ->
+                    Text("- ${userMap[memberId] ?: memberId}") // Show username if available
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = {
-                    // Update the task with new values
-                    taskViewModel.updateTask(task.copy(title = title, dueDate = dueDate, progress = progress))
-                    navController.popBackStack()
-                }) {
-                    Text("Save Changes")
+                // Update progress button
+                Button(onClick = { navController.navigate("${Routes.UpdateTaskProgress.routes.replace("{taskId}", taskId)}") }) {
+                    Text("Update Task Progress")
                 }
-            } else {
-                Text("Task not found.")
+
+                // Generate Report button
+                Button(onClick = { taskViewModel.generateReport(taskId) }) {
+                    Text("Generate Report")
+                }
             }
         }
     }
 }
+
+

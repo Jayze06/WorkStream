@@ -1,23 +1,57 @@
 package com.example.asstest1.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.asstest1.screens.AddThreads
-import com.example.asstest1.screens.BottomNav
-import com.example.asstest1.screens.Home
-import com.example.asstest1.screens.Login
-import com.example.asstest1.screens.Notification
-import com.example.asstest1.screens.Profile
-import com.example.asstest1.screens.Register
-import com.example.asstest1.screens.Search
-import com.example.asstest1.screens.Splash
-import com.example.asstest1.screens.AddTaskScreen // Ensure this is imported
-import com.example.asstest1.screens.TaskDetail
-import com.example.asstest1.screens.Tasks
+import com.example.asstest1.screens.*
 
+@Composable
+fun NavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    startDestination: String
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable("login") { Login(navController) }
+        composable(Routes.Register.routes) { Register(navController) }
+        composable(Routes.Home.routes) { Home(navController) }
+        composable(Routes.Tasks.routes) { Tasks(navController) }
+        composable(Routes.AddThreads.routes) { AddThreads(navController) }
+        composable(Routes.Profile.routes) { Profile(navController) }
+        composable(Routes.TaskDetail.routes + "/{taskId}") { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
+            TaskDetail(navController, taskId)
+        }
+        composable(Routes.UpdateTaskProgress.routes) { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
+            UpdateTaskProgress(navController, taskId)
+        }
+        composable("add_task") { AddTaskScreen(navController) }
+    }
+}
+
+
+
+/*//3.0
+@Composable
+fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.Home.routes,
+        modifier = modifier
+    ) {
+        composable(Routes.Home.routes) { Home(navController) }
+        composable(Routes.Tasks.routes) { Tasks(navController) }
+        composable(Routes.AddThreads.routes) { AddThreads(navController) }
+        composable(Routes.Profile.routes) { Profile(navController) }
+    }
+}*/
 
 
 /* //V1
@@ -93,7 +127,7 @@ fun NavGraph(navController: NavHostController) {
 }
 */
 
-
+/*
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Routes.Splash.routes) {
@@ -114,3 +148,4 @@ fun NavGraph(navController: NavHostController) {
         }
     }
 }
+*/
