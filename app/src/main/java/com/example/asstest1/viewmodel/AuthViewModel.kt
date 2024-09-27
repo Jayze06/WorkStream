@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.asstest1.model.UserModel
 import com.example.asstest1.utils.SharedPref
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
@@ -26,8 +27,8 @@ class AuthViewModel : ViewModel() {
     private val storageRef = Firebase.storage.reference
     private val imageRef = storageRef.child("users/${UUID.randomUUID()}.jpg")
 
-    private val _firebaseUser = MutableLiveData<FirebaseUser>()
-    val firebaseUser: LiveData<FirebaseUser> = _firebaseUser
+    private val _firebaseUser = MutableLiveData<FirebaseUser?>()
+    val firebaseUser: LiveData<FirebaseUser?> = _firebaseUser
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
@@ -38,6 +39,9 @@ class AuthViewModel : ViewModel() {
 
     private val _userData = MutableLiveData<UserModel?>()
     val userData: LiveData<UserModel?> = _userData
+
+
+
 
 
     init {
@@ -217,6 +221,37 @@ class AuthViewModel : ViewModel() {
                 // Handle error
             }
     }
+
+    // Update password
+    fun updatePassword(currentPassword: String, newPassword: String) {
+        val user = auth.currentUser
+        val email = user?.email ?: return
+
+        // Reauthenticate the user before updating password
+        val credential = EmailAuthProvider.getCredential(email, currentPassword)
+        user.reauthenticate(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                // Optionally fetch updated user data after password change
+                                fetchUserData(user.uid)
+                            } else {
+                                _error.postValue("Password update failed")
+                            }
+                        }
+                } else {
+                    _error.postValue("Reauthentication failed")
+                }
+            }
+    }
+
+
+    fun refreshUserData(uid: String) {
+        fetchUserData(uid)  // Re-fetch user data after updating profile or password
+    }
+
 }
 
 

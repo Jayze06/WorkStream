@@ -15,6 +15,8 @@ import com.example.asstest1.screens.Register
 import com.example.asstest1.screens.Search
 import com.example.asstest1.screens.Splash
 
+
+
 @Composable
 fun NavGraph(navController: NavHostController){
 
@@ -57,3 +59,32 @@ fun NavGraph(navController: NavHostController){
         }
     }
 }
+
+/*
+@Composable
+fun NavGraph(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = Routes.Splash.routes) {
+        composable(Routes.Splash.routes) {
+            Splash(navController)
+        }
+        composable(Routes.Home.routes) {
+            Home(navController)
+        }
+        composable(Routes.Tasks.routes) {
+            Tasks(navController) // Make sure to create a Tasks Composable
+        }
+        composable(Routes.Threads.routes) {
+            Threads(navController) // Make sure to create a Threads Composable
+        }
+        composable(Routes.Profile.routes) {
+            Profile(navController)
+        }
+        composable(Routes.Login.routes) {
+            Login(navController)
+        }
+        composable(Routes.Register.routes) {
+            Register(navController)
+        }
+    }
+}
+*/
