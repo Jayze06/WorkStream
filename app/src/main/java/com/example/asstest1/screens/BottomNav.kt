@@ -25,7 +25,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.asstest1.model.BottomNavItem
 import com.example.asstest1.navigation.Routes
 import java.lang.reflect.Modifier
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Share
 
+/*  //V1
 @Composable
 fun BottomNav(navController: NavHostController){
 
@@ -112,3 +115,60 @@ fun MyBottomBar(navController1: NavHostController) {
     }
 }
 
+*/
+
+//V2
+
+
+
+@Composable
+fun BottomNav(navController: NavHostController) {
+
+    val navController1 = rememberNavController()
+
+    Scaffold(bottomBar = { MyBottomBar(navController) }) { innerPadding ->
+        NavHost(navController = navController1, startDestination = Routes.Home.routes,
+            modifier = androidx.compose.ui.Modifier.padding(innerPadding)) {
+            composable(Routes.Home.routes) { Home(navController) }
+            composable(Routes.Tasks.routes) { Tasks(navController) }
+            composable(Routes.AddThreads.routes) { AddThreads(navController) }
+            composable(Routes.Profile.routes) { Profile(navController) }
+        }
+    }
+}
+
+
+
+@Composable
+fun MyBottomBar(navController: NavHostController) {
+    val backStackEntry = navController.currentBackStackEntryAsState()
+
+    // Updated list with Dashboard for Tasks and ChatBubble for Threads
+    val list = listOf(
+        BottomNavItem("Home", Routes.Home.routes, Icons.Rounded.Home),
+        BottomNavItem("Tasks", Routes.Tasks.routes, Icons.Rounded.Menu), // Dashboard icon for Tasks
+        BottomNavItem("Threads", Routes.AddThreads.routes, Icons.Rounded.Share), // Speech bubble icon for Threads
+        BottomNavItem("Profile", Routes.Profile.routes, Icons.Rounded.Person)
+    )
+
+    BottomAppBar {
+        list.forEach { item ->
+            val selected = item.route == backStackEntry.value?.destination?.route
+            NavigationBarItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = {
+                    Icon(imageVector = item.icon, contentDescription = item.title)
+                }
+            )
+        }
+    }
+}

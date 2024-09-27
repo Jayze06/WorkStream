@@ -14,9 +14,13 @@ import com.example.asstest1.screens.Profile
 import com.example.asstest1.screens.Register
 import com.example.asstest1.screens.Search
 import com.example.asstest1.screens.Splash
+import com.example.asstest1.screens.AddTaskScreen // Ensure this is imported
+import com.example.asstest1.screens.TaskDetail
+import com.example.asstest1.screens.Tasks
 
 
 
+/* //V1
 @Composable
 fun NavGraph(navController: NavHostController){
 
@@ -58,7 +62,7 @@ fun NavGraph(navController: NavHostController){
             Register(navController)
         }
     }
-}
+}*/
 
 /*
 @Composable
@@ -88,3 +92,25 @@ fun NavGraph(navController: NavHostController) {
     }
 }
 */
+
+
+@Composable
+fun NavGraph(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = Routes.Splash.routes) {
+        composable(Routes.Splash.routes) { Splash(navController) }
+        composable(Routes.Home.routes) { Home(navController) }
+        composable(Routes.Notification.routes) { Notification() }
+        composable(Routes.AddThreads.routes) { AddThreads(navController) }
+        composable(Routes.Profile.routes) { Profile(navController) }
+        composable(Routes.Search.routes) { Search() }
+        composable(Routes.BottomNav.routes) { BottomNav(navController) }
+        composable(Routes.Login.routes) { Login(navController) }
+        composable(Routes.Register.routes) { Register(navController) }
+        composable(Routes.Tasks.routes) { Tasks(navController) }
+        composable(Routes.AddTask.routes) { AddTaskScreen(navController) }
+        composable(Routes.TaskDetail.routes + "/{taskId}") { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId") ?: return@composable
+            TaskDetail(navController, taskId)
+        }
+    }
+}

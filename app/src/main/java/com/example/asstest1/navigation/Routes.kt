@@ -1,5 +1,6 @@
 package com.example.asstest1.navigation
 
+/* //V1
 sealed class Routes(val routes:String) {
 
     object Home : Routes("home")
@@ -11,7 +12,7 @@ sealed class Routes(val routes:String) {
     object BottomNav : Routes("bottom_nav")
     object Login : Routes("login")
     object Register : Routes("register")
-}
+}*/
 
 /*
 sealed class Routes(val routes: String) {
@@ -23,3 +24,19 @@ sealed class Routes(val routes: String) {
     object Login : Routes("login")
     object Register : Routes("register")
 }*/
+//new
+sealed class Routes(val routes: String) {
+    object Home : Routes("home")
+    object Notification : Routes("notification")
+    object Profile : Routes("profile")
+    object Search : Routes("search")
+    object Splash : Routes("splash")
+    object AddThreads : Routes("add_threads")
+    object BottomNav : Routes("bottom_nav")
+    object Login : Routes("login")
+    object Register : Routes("register")
+    object Tasks : Routes("tasks")
+    object AddTask : Routes("add_task")
+    object TaskDetail : Routes("taskDetail")
+
+}
