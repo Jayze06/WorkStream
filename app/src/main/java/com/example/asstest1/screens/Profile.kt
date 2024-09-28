@@ -6,7 +6,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,14 +49,8 @@ fun Profile(navHostController: NavHostController) {
     var showUsernameDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
 
-    // Detect screen orientation
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
-
-    // Log the current orientation for debugging purposes
-    LaunchedEffect(configuration.orientation) {
-        println("Current orientation: ${if (isPortrait) "Portrait" else "Landscape"}")
-    }
 
     // Redirect to login if not logged in
     LaunchedEffect(firebaseUser) {
@@ -71,7 +67,6 @@ fun Profile(navHostController: NavHostController) {
     }
 
     if (isPortrait) {
-        // Portrait Layout
         PortraitProfileLayout(
             userData = userData,
             onUpdateProfilePicture = { uri ->
@@ -84,7 +79,6 @@ fun Profile(navHostController: NavHostController) {
             onLogout = { authViewModel.logout() }
         )
     } else {
-        // Landscape Layout
         LandscapeProfileLayout(
             userData = userData,
             onUpdateProfilePicture = { uri ->
@@ -95,6 +89,31 @@ fun Profile(navHostController: NavHostController) {
             onShowUsernameDialog = { showUsernameDialog = true },
             onShowPasswordDialog = { showPasswordDialog = true },
             onLogout = { authViewModel.logout() }
+        )
+    }
+
+    // Display the Profile dialog when showUsernameDialog is true
+    if (showUsernameDialog) {
+        ProfileDialog(
+            currentName = userData?.name ?: "",
+            currentBio = userData?.bio ?: "",
+            currentEmail = userData?.email ?: "",
+            onConfirm = { name, bio, email ->
+                authViewModel.updateUserProfile(name, bio, email, null)  // Handle profile update
+                showUsernameDialog = false  // Close dialog after update
+            },
+            onDismiss = { showUsernameDialog = false }  // Close dialog when dismissed
+        )
+    }
+
+    // Display the Password dialog when showPasswordDialog is true
+    if (showPasswordDialog) {
+        PasswordDialog(
+            onConfirm = { oldPass, newPass ->
+                authViewModel.updatePassword(oldPass, newPass)  // Handle password update
+                showPasswordDialog = false  // Close dialog after update
+            },
+            onDismiss = { showPasswordDialog = false }  // Close dialog when dismissed
         )
     }
 }
@@ -109,12 +128,15 @@ fun PortraitProfileLayout(
     onShowPasswordDialog: () -> Unit,
     onLogout: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         ProfileContent(userData, onUpdateProfilePicture)
         Spacer(modifier = Modifier.height(32.dp))
@@ -132,15 +154,18 @@ fun LandscapeProfileLayout(
     onShowPasswordDialog: () -> Unit,
     onLogout: () -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     Row(
         modifier = Modifier
-            .wrapContentSize()  // Change from fillMaxSize to wrapContentSize
+            .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(16.dp),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
         ProfileContent(userData, onUpdateProfilePicture)
-        Spacer(modifier = Modifier.width(32.dp)) // Spacer between profile and buttons
+        Spacer(modifier = Modifier.width(32.dp))
         ProfileButtons(onShowUsernameDialog, onShowPasswordDialog, onLogout)
     }
 }
@@ -204,7 +229,6 @@ fun ProfileContent(
         }
     }
 }
-
 
 @Composable
 fun ProfilePicture(
@@ -376,7 +400,6 @@ fun PasswordDialog(
         }
     )
 }
-
 
 /*
 @Composable
