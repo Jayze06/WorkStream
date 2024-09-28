@@ -109,9 +109,12 @@ class TaskViewModel : ViewModel() {
 
     // Add a new task to Firebase
     fun addTask(task: TaskModel) {
-        taskReference.push().setValue(task)
+        val newTaskRef = taskReference.push()  // Get a reference to the new task with a unique ID
+        val taskWithId = task.copy(id = newTaskRef.key ?: "") // Copy task with the auto-generated ID
+
+        newTaskRef.setValue(taskWithId)
             .addOnSuccessListener {
-                Log.d("TaskViewModel", "Task added successfully")
+                Log.d("TaskViewModel", "Task added successfully with ID: ${taskWithId.id}")
                 fetchTasks() // Refresh tasks after adding
             }
             .addOnFailureListener { exception ->
@@ -153,7 +156,7 @@ class TaskViewModel : ViewModel() {
         val taskRef = taskReference.child(taskId)
 
         // Ensure the new progress is within 0 and 100
-        val boundedNewProgress = newProgress.coerceIn(0, 100).toLong() // Convert to Long
+        val boundedNewProgress = newProgress.coerceIn(0, 100).toLong()
 
         // Update the member's progress
         taskRef.child("assignedMembers").child(memberId).setValue(boundedNewProgress)
@@ -165,20 +168,21 @@ class TaskViewModel : ViewModel() {
                     val assignedMembersMap = snapshot.children
                         .mapNotNull { child ->
                             val key = child.key
-                            val value = child.getValue(Long::class.java)?.toInt() // Convert Long to Int safely
+                            val value = child.getValue(Long::class.java)
                             if (key != null && value != null) Pair(key, value) else null
                         }
                         .toMap()
 
                     if (assignedMembersMap.isNotEmpty()) {
-                        // Calculate the total progress as the average of member progresses
-                        val totalProgress = (assignedMembersMap.values.sum() / assignedMembersMap.size).coerceIn(0, 100)
+                        // Calculate the total progress as the sum of all member progresses
+                        val totalProgress = assignedMembersMap.values.sum().coerceAtMost(100)
 
                         // Update total task progress in Firebase
-                        taskRef.child("progress").setValue(totalProgress.toLong()) // Store as Long
+                        taskRef.child("progress").setValue(totalProgress.toLong())
                             .addOnSuccessListener {
                                 Log.d("TaskViewModel", "Total progress updated to $totalProgress%")
-                                fetchTasks() // Refresh tasks to reflect new progress
+                                // After updating the task, fetch the latest data to ensure the UI reflects the new values
+                                fetchTasks()
                             }
                             .addOnFailureListener { exception ->
                                 Log.e("TaskViewModel", "Error updating total progress", exception)
@@ -194,4 +198,6 @@ class TaskViewModel : ViewModel() {
                 Log.e("TaskViewModel", "Error updating member progress", exception)
             }
     }
+
+
 }

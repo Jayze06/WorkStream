@@ -53,10 +53,10 @@ fun TaskDetail(navController: NavController, taskId: String) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Display progress bar
+                // Display progress bar and text
                 LinearProgressIndicator(progress = it.progress / 100f)
                 Text(
-                    text = "Progress: ${it.progress}%",
+                    text = "Progress: ${it.progress}%", // Display overall progress
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 4.dp)
                 )

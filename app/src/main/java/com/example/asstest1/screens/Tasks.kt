@@ -26,7 +26,7 @@ import java.util.*
 @Composable
 fun Tasks(navController: NavController) {
     val taskViewModel: TaskViewModel = viewModel()
-    val tasks: List<TaskModel> by taskViewModel.tasks.observeAsState(emptyList())
+    val tasks: List<TaskModel> by taskViewModel.tasks.observeAsState(emptyList()) // Observe tasks LiveData
 
     Scaffold(
         topBar = {
@@ -54,7 +54,7 @@ fun Tasks(navController: NavController) {
                 LazyColumn {
                     items(tasks) { task: TaskModel ->
                         TaskItem(task) {
-                            // Handle task item click, e.g., navigate to task details or edit screen
+                            // Navigate to task details on click
                             navController.navigate("${Routes.TaskDetail.route}/${task.id}")
                         }
                     }
