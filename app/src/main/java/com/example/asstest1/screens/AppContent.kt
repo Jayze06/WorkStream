@@ -17,16 +17,28 @@ fun AppContent(navController: NavHostController) {
     val backStackEntry = navController.currentBackStackEntryAsState()
     val currentScreen = backStackEntry.value?.destination?.route ?: Routes.Home.route
 
+    // List of routes where the TopAppBar and BottomNav should be hidden
+    val hideTopAndBottomBarRoutes = listOf(Routes.Login.route, Routes.Register.route)
+
+    // Determine if the current screen should hide the TopAppBar and BottomNav
+    val shouldShowBars = currentScreen !in hideTopAndBottomBarRoutes
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() },
-                onNotificationClick = { /* Handle notification click */ }
-            )
+            if (shouldShowBars) {
+                TopAppBar(
+                    title = currentScreen,
+                    canNavigateBack = navController.previousBackStackEntry != null,
+                    navigateUp = { navController.navigateUp() },
+                    onNotificationClick = { /* Handle notification click */ }
+                )
+            }
         },
-        bottomBar = { MyBottomBar(navController) }
+        bottomBar = {
+            if (shouldShowBars) {
+                MyBottomBar(navController)
+            }
+        }
     ) { innerPadding ->
         NavGraph(
             navController = navController,
