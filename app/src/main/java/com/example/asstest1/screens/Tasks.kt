@@ -1,5 +1,6 @@
 package com.example.asstest1.screens
 
+import android.content.res.Configuration
 import android.text.format.DateFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,10 @@ import com.example.asstest1.viewmodel.TaskViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.asstest1.navigation.Routes
 import java.text.SimpleDateFormat
@@ -26,18 +31,57 @@ import java.util.*
 @Composable
 fun Tasks(navController: NavController) {
     val taskViewModel: TaskViewModel = viewModel()
-    val tasks: List<TaskModel> by taskViewModel.tasks.observeAsState(emptyList()) // Observe tasks LiveData
+    val tasks: List<TaskModel> by taskViewModel.tasks.observeAsState(emptyList())
+
+    var showCompletedTasks by remember { mutableStateOf(false) }
+    val configuration = LocalConfiguration.current
+
+    // Filter tasks based on the toggle state (Completed or Pending)
+    val filteredTasks = if (showCompletedTasks) {
+        tasks.filter { it.progress == 100L } // Completed tasks
+    } else {
+        tasks.filter { it.progress < 100L } // Ongoing tasks
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Tasks") },
+                title = {},
+                navigationIcon = {
+                    // Toggle Button to switch between Completed and Pending Tasks
+                    val toggleText = if (showCompletedTasks) "Show Ongoing" else "Show Completed"
+                    val backgroundColor = if (showCompletedTasks) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    val contentColor = MaterialTheme.colorScheme.onPrimary
+
+                    Button(
+                        onClick = { showCompletedTasks = !showCompletedTasks },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = backgroundColor,
+                            contentColor = contentColor
+                        ),
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(0.5f)
+                            .height(48.dp)
+                    ) {
+                        Text(toggleText)
+                    }
+                },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Routes.AddTask.route) }) {
-                        Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Task")
+                    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        IconButton(onClick = { navController.navigate(Routes.AddTask.route) }) {
+                            Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Task")
+                        }
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                FloatingActionButton(onClick = { navController.navigate(Routes.AddTask.route) }) {
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Task")
+                }
+            }
         }
     ) { innerPadding ->
         Column(
@@ -48,11 +92,14 @@ fun Tasks(navController: NavController) {
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top
         ) {
-            if (tasks.isEmpty()) {
+            if (filteredTasks.isEmpty()) {
                 Text("No tasks available.")
             } else {
-                LazyColumn {
-                    items(tasks) { task: TaskModel ->
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(filteredTasks) { task: TaskModel ->
                         TaskItem(task) {
                             // Navigate to task details on click
                             navController.navigate("${Routes.TaskDetail.route}/${task.id}")
@@ -63,7 +110,21 @@ fun Tasks(navController: NavController) {
         }
     }
 }
-
+//@Composable
+//fun TaskItem(task: TaskModel, onClick: () -> Unit) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable(onClick = onClick)
+//            .padding(vertical = 4.dp),
+//        elevation = CardDefaults.elevatedCardElevation()
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text("Task: ${task.title}", style = MaterialTheme.typography.titleMedium)
+//            Text("Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)
+//        }
+//    }
+//}
 /*@Composable
 fun TaskItem(task: TaskModel, onClick: () -> Unit) {
     Card(
