@@ -100,26 +100,61 @@ class AuthViewModel : ViewModel() {
         imageUri: Uri?,
         context: Context
     ) {
+        // Create the user with email and password
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _firebaseUser.postValue(auth.currentUser)
 
-                    // Post value to indicate registration success
+                    // Log success
                     _registrationSuccess.postValue(true)
 
+                    // Check for the image upload and user data saving process
                     if (imageUri != null) {
                         saveImage(email, password, name, bio, userName, imageUri, auth.currentUser?.uid, context)
                     } else {
                         saveDataWithoutImage(email, password, name, bio, userName, auth.currentUser?.uid, context)
                     }
+
                 } else {
-                    // Post value to indicate registration failure
+                    // Log any errors if registration fails
                     _registrationSuccess.postValue(false)
-                    _error.postValue("Something went wrong.")
+                    _error.postValue(task.exception?.message ?: "Something went wrong during registration.")
                 }
             }
     }
+
+
+
+//    fun register(
+//        email: String,
+//        password: String,
+//        name: String,
+//        bio: String,
+//        userName: String,
+//        imageUri: Uri?,
+//        context: Context
+//    ) {
+//        auth.createUserWithEmailAndPassword(email, password)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    _firebaseUser.postValue(auth.currentUser)
+//
+//                    // Post value to indicate registration success
+//                    _registrationSuccess.postValue(true)
+//
+//                    if (imageUri != null) {
+//                        saveImage(email, password, name, bio, userName, imageUri, auth.currentUser?.uid, context)
+//                    } else {
+//                        saveDataWithoutImage(email, password, name, bio, userName, auth.currentUser?.uid, context)
+//                    }
+//                } else {
+//                    // Post value to indicate registration failure
+//                    _registrationSuccess.postValue(false)
+//                    _error.postValue("Something went wrong.")
+//                }
+//            }
+//    }
 
     private fun saveImage(
         email: String,

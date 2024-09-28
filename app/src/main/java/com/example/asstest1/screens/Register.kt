@@ -104,7 +104,7 @@ fun Register(navHostController: NavHostController){
 
     LaunchedEffect(firebaseUser) {
         if (firebaseUser!=null){
-            navHostController.navigate(Routes.BottomNav.route){
+            navHostController.navigate(Routes.Home.route) {
                 popUpTo(navHostController.graph.startDestinationId)
                 launchSingleTop = true
             }
