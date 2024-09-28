@@ -27,12 +27,11 @@ fun TaskItem(task: TaskModel, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = task.title, style = MaterialTheme.typography.bodyLarge)
 
-            // Format due date
             val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val formattedDate = dateFormat.format(Date(task.dueDate))
             Text(text = "Due: $formattedDate", style = MaterialTheme.typography.bodyMedium)
 
-            Text(text = "Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)  // Correctly displaying progress
         }
     }
 }
