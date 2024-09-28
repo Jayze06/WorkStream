@@ -38,11 +38,12 @@ class TaskViewModel : ViewModel() {
         fetchUsers()
     }
 
+
     fun getUserById(memberId: String, onResult: (String?) -> Unit) {
         val userRef = FirebaseFirestore.getInstance().collection("users").document(memberId)
         userRef.get().addOnSuccessListener { document ->
             if (document.exists()) {
-                val userName = document.getString("userName") // Ensure field name matches Firestore
+                val userName = document.getString("userName")  // Ensure this matches your Firestore field name
                 onResult(userName ?: "User not found")  // Return "User not found" if userName is null
             } else {
                 onResult("User not found")  // Document doesn't exist
@@ -53,21 +54,76 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    // Function to fetch and update userMap
-    fun fetchUserNames(memberIds: List<String>) {
-        // Initialize or get current userMap
-        val currentMap = _userMap.value?.toMutableMap() ?: mutableMapOf()
+//    fun getUserById(memberId: String, onResult: (String?) -> Unit) {
+//        val userRef = FirebaseFirestore.getInstance().collection("users").document(memberId)
+//        userRef.get().addOnSuccessListener { document ->
+//            if (document.exists()) {
+//                val userName = document.getString("userName") // Ensure field name matches Firestore
+//                onResult(userName ?: "User not found")  // Return "User not found" if userName is null
+//            } else {
+//                onResult("User not found")  // Document doesn't exist
+//            }
+//        }.addOnFailureListener { exception ->
+//            Log.e("Firestore", "Error getting user: $exception")
+//            onResult("User not found")  // Handle error case
+//        }
+//    }
 
-        memberIds.forEach { memberId ->
-            // Fetch only if not already present
-            if (!currentMap.containsKey(memberId)) {
-                getUserById(memberId) { userName ->
-                    currentMap[memberId] = userName ?: "Unknown User"
-                    _userMap.value = currentMap.toMap() // Update LiveData
+
+
+    fun fetchUserNames(memberIds: List<String>) {
+        viewModelScope.launch {
+            val currentMap = _userMap.value?.toMutableMap() ?: mutableMapOf()
+
+            // Use Firebase Firestore to fetch usernames asynchronously
+            memberIds.forEach { memberId ->
+                if (!currentMap.containsKey(memberId)) {
+                    getUserById(memberId) { userName ->
+                        currentMap[memberId] = userName ?: "User not found"
+                        _userMap.value = currentMap.toMap() // Update LiveData once new user is fetched
+                    }
                 }
             }
         }
     }
+
+
+
+//    // In TaskViewModel: Add logging inside fetchUserNames
+//    fun fetchUserNames(memberIds: List<String>) {
+//        val currentMap = _userMap.value?.toMutableMap() ?: mutableMapOf()
+//
+//        // Filter out the IDs that we already have in the map
+//        val idsToFetch = memberIds.filter { !currentMap.containsKey(it) }
+//
+//        if (idsToFetch.isEmpty()) return  // No need to fetch if all IDs are already in the map
+//
+//        idsToFetch.forEach { memberId ->
+//            getUserById(memberId) { userName ->
+//                currentMap[memberId] = userName ?: "Unknown User"
+//                _userMap.value = currentMap.toMap()  // Update LiveData with new user data
+//                Log.d("TaskViewModel", "Fetched username for $memberId: ${userName ?: "Unknown User"}")
+//            }
+//        }
+//    }
+
+
+
+//    // Function to fetch and update userMap
+//    fun fetchUserNames(memberIds: List<String>) {
+//        // Initialize or get current userMap
+//        val currentMap = _userMap.value?.toMutableMap() ?: mutableMapOf()
+//
+//        memberIds.forEach { memberId ->
+//            // Fetch only if not already present
+//            if (!currentMap.containsKey(memberId)) {
+//                getUserById(memberId) { userName ->
+//                    currentMap[memberId] = userName ?: "Unknown User"
+//                    _userMap.value = currentMap.toMap() // Update LiveData
+//                }
+//            }
+//        }
+//    }
 
     // Fetch users from Firebase Realtime Database (if needed elsewhere)
     private fun fetchUsers() {
@@ -90,21 +146,52 @@ class TaskViewModel : ViewModel() {
             try {
                 val snapshot = taskReference.get().await() // Use suspend function with coroutine
                 val taskList = mutableListOf<TaskModel>()
+                val memberIds = mutableSetOf<String>()  // Use a set to avoid duplicate member IDs
+
                 snapshot.children.forEach { childSnapshot ->
                     val task = childSnapshot.getValue(TaskModel::class.java)
-                    task?.let { taskList.add(it) }
+                    task?.let {
+                        taskList.add(it)
+                        // Collect all member IDs from assignedMembers
+                        memberIds.addAll(it.assignedMembers.keys)
+                    }
                 }
+
                 _tasks.value = taskList
                 Log.d("TaskViewModel", "Fetched tasks: $taskList")
 
                 // Fetch usernames after getting tasks
-                val allMemberIds = taskList.flatMap { it.assignedMembers.keys }.distinct()
-                fetchUserNames(allMemberIds)
+                if (memberIds.isNotEmpty()) {
+                    fetchUserNames(memberIds.toList())
+                }
             } catch (exception: Exception) {
                 Log.e("TaskViewModel", "Error fetching tasks", exception)
             }
         }
     }
+
+
+//    // Fetch tasks from Firebase Realtime Database
+//    private fun fetchTasks() {
+//        viewModelScope.launch {
+//            try {
+//                val snapshot = taskReference.get().await() // Use suspend function with coroutine
+//                val taskList = mutableListOf<TaskModel>()
+//                snapshot.children.forEach { childSnapshot ->
+//                    val task = childSnapshot.getValue(TaskModel::class.java)
+//                    task?.let { taskList.add(it) }
+//                }
+//                _tasks.value = taskList
+//                Log.d("TaskViewModel", "Fetched tasks: $taskList")
+//
+//                // Fetch usernames after getting tasks
+//                val allMemberIds = taskList.flatMap { it.assignedMembers.keys }.distinct()
+//                fetchUserNames(allMemberIds)
+//            } catch (exception: Exception) {
+//                Log.e("TaskViewModel", "Error fetching tasks", exception)
+//            }
+//        }
+//    }
 
 
     // Add a new task to Firebase

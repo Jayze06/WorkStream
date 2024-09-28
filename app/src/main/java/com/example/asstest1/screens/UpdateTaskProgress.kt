@@ -1,6 +1,8 @@
 package com.example.asstest1.screens
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -35,11 +39,7 @@ fun UpdateTaskProgress(navController: NavController, taskId: String) {
     val taskViewModel: TaskViewModel = viewModel()
     val tasks by taskViewModel.tasks.observeAsState(emptyList())
     val task = tasks.find { it.id == taskId }
-
-    // Observe userMap from ViewModel
-    val userMap by taskViewModel.userMap.observeAsState(emptyMap())
-
-    // State to track individual member progress
+    val users by taskViewModel.users.observeAsState(emptyList())
     val memberProgress = remember { mutableStateMapOf<String, Int>() }
 
     LaunchedEffect(task) {
@@ -48,102 +48,71 @@ fun UpdateTaskProgress(navController: NavController, taskId: String) {
         }
     }
 
-
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedMemberId by remember { mutableStateOf("") }
-    var isIncreasing by remember { mutableStateOf(true) }
-
-    // Calculate total progress based on memberProgress
-    val totalProgress = memberProgress.values.sum().coerceIn(0, 100)
-    val progressBarValue = totalProgress / 100f
-
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Update Task Progress") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+//        topBar = {
+//            CenterAlignedTopAppBar(
+//                title = { Text("Update Task Progress") },
+//                navigationIcon = {
+//                    IconButton(onClick = { navController.popBackStack() }) {
+//                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+//                    }
+//                }
+//            )
+//        }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            // Total Progress Bar
-            LinearProgressIndicator(progress = progressBarValue)
-            Text(
-                text = "Total Progress: $totalProgress%",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // List of Assigned Members with usernames
-            task?.assignedMembers?.forEach { (memberId, memberProgress) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Display username or "Loading..."
+        if (task == null || users.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Text(text = "Loading task and assigned members...")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    LinearProgressIndicator(progress = memberProgress.values.sum() / 100f)
                     Text(
-                        text = "Member: ${userMap[memberId] ?: "Loading..."}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
+                        text = "Total Progress: ${memberProgress.values.sum()}%",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
+                }
 
-                    // Minus Button
-                    IconButton(onClick = {
-                        selectedMemberId = memberId
-                        isIncreasing = false
-                        showDialog = true
-                    }) {
-                        Text("-", style = MaterialTheme.typography.bodyLarge)
+                items(task.assignedMembers.toList()) { (memberId, memberProgress) ->
+                    val user = users.find { it.uid == memberId }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Member: ${user?.name ?: "User not found"}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "$memberProgress% progress",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
-
-                    // Plus Button
-                    IconButton(onClick = {
-                        selectedMemberId = memberId
-                        isIncreasing = true
-                        showDialog = true
-                    }) {
-                        Text("+", style = MaterialTheme.typography.bodyLarge)
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    // Individual Member Progress
-                    Text(
-                        text = "Progress: ${memberProgress ?: 0}%", // Access progress from assignedMembers directly
-                        style = MaterialTheme.typography.bodyMedium
-                    )
                 }
             }
         }
     }
-
-    // Show the numpad dialog if needed
-    if (showDialog) {
-        val memberName = userMap[selectedMemberId] ?: "Unknown User"
-        showNumpadDialog(
-            memberName = memberName,
-            memberId = selectedMemberId,
-            memberProgress = memberProgress,
-            increase = isIncreasing,
-            taskId = taskId,
-            taskViewModel = taskViewModel,
-            onDismiss = { showDialog = false }
-        )
-    }
 }
+
 
 @Composable
 fun showNumpadDialog(
@@ -198,8 +167,6 @@ fun showNumpadDialog(
 
                         // Update the ViewModel
                         taskViewModel.updateMemberProgress(taskId, memberId, newProgress)
-                    } else {
-                        // Optionally, show an error message or ignore invalid input
                     }
                 },
                 enabled = inputValue.isNotBlank()
@@ -214,6 +181,7 @@ fun showNumpadDialog(
         }
     )
 }
+
 /*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

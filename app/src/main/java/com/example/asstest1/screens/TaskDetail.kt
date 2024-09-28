@@ -1,6 +1,8 @@
 package com.example.asstest1.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -23,9 +25,7 @@ fun TaskDetail(navController: NavController, taskId: String) {
     val taskViewModel: TaskViewModel = viewModel()
     val tasks by taskViewModel.tasks.observeAsState(emptyList())
     val task = tasks.find { it.id == taskId }
-
-    // Observe userMap from ViewModel
-    val userMap by taskViewModel.userMap.observeAsState(emptyMap())
+    val users by taskViewModel.users.observeAsState(emptyList())
 
     Scaffold(
         topBar = {
@@ -42,81 +42,79 @@ fun TaskDetail(navController: NavController, taskId: String) {
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            task?.let {
-                Text("Title: ${it.title}", style = MaterialTheme.typography.titleLarge)
+        if (task == null || users.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Text(text = "Loading assigned members...")
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    Text("Title: ${task.title}", style = MaterialTheme.typography.titleLarge)
+                }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                item {
+                    LinearProgressIndicator(progress = task.progress / 100f)
+                    Text(
+                        text = "Progress: ${task.progress}%", // Display overall progress
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
 
-                // Display progress bar and text
-                LinearProgressIndicator(progress = it.progress / 100f)
-                Text(
-                    text = "Progress: ${it.progress}%", // Display overall progress
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                item {
+                    Text("Assigned Members:", style = MaterialTheme.typography.titleMedium)
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // List of members with usernames and their progress
-                Text("Assigned Members:", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(8.dp))
-                Column {
-                    it.assignedMembers.forEach { (memberId, memberProgress) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // Display username or "User not found"
-                            Text(
-                                text = "- ${userMap[memberId] ?: "User not found"}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = "$memberProgress% progress",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                items(task.assignedMembers.toList()) { (memberId, memberProgress) ->
+                    val user = users.find { it.uid == memberId }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "- ${user?.name ?: "User not found"}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "$memberProgress% progress",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Update Progress Button
-                Button(
-                    onClick = {
-                        navController.navigate("update_task_progress/$taskId")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Update Task Progress")
+                item {
+                    Button(
+                        onClick = {
+                            navController.navigate("update_task_progress/$taskId")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Update Task Progress")
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Generate Report Button
-                Button(
-                    onClick = { taskViewModel.generateReport(taskId) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Generate Report")
-                }
-            } ?: run {
-                // Handle case when task is null (e.g., loading or not found)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+                item {
+                    Button(
+                        onClick = { taskViewModel.generateReport(taskId) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Generate Report")
+                    }
                 }
             }
         }

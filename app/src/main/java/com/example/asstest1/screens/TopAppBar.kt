@@ -27,8 +27,11 @@ fun TopAppBar(
         Routes.Tasks.route -> "Tasks"
         Routes.AddTask.route -> "Add Task"
         Routes.TaskDetail.route -> "Task Detail"
+        Routes.AddThreads.route -> "Thread"
+        Routes.UpdateTaskProgress.route -> "Update Task"
         Routes.Profile.route -> "Profile"
         Routes.Notification.route -> "Notifications"
+        //Routes.TaskDetail.route -> "Task Details"
         else -> "App"
     }
 
