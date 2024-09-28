@@ -19,22 +19,23 @@ fun NavGraph(
         modifier = modifier
     ) {
         composable("login") { Login(navController) }
-        composable(Routes.Register.routes) { Register(navController) }
-        composable(Routes.Home.routes) { Home(navController) }
-        composable(Routes.Tasks.routes) { Tasks(navController) }
-        composable(Routes.AddThreads.routes) { AddThreads(navController) }
-        composable(Routes.Profile.routes) { Profile(navController) }
-        composable(Routes.TaskDetail.routes + "/{taskId}") { backStackEntry ->
+        composable(Routes.Register.route) { Register(navController) }
+        composable(Routes.Home.route) { Home(navController) }
+        composable(Routes.Tasks.route) { Tasks(navController) }
+        composable(Routes.AddThreads.route) { AddThreads(navController) }
+        composable(Routes.Profile.route) { Profile(navController) }
+        composable("${Routes.TaskDetail.route}/{taskId}") { backStackEntry ->
             val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
             TaskDetail(navController, taskId)
         }
-        composable(Routes.UpdateTaskProgress.routes) { backStackEntry ->
+        composable(Routes.UpdateTaskProgress.route) { backStackEntry ->
             val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
             UpdateTaskProgress(navController, taskId)
         }
-        composable("add_task") { AddTaskScreen(navController) }
+        composable(Routes.AddTask.route) { AddTaskScreen(navController) }
     }
 }
+
 
 
 

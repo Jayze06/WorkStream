@@ -94,13 +94,13 @@ fun AddThreads(navHostController: NavHostController) {
     }
 
     LaunchedEffect(isPosted) {
-        if (isPosted!!){
+        if (isPosted!!) {
             thread = ""
             imageUri = null
             Toast.makeText(context, "Thread added", Toast.LENGTH_SHORT).show()
 
-            navHostController.navigate(Routes.Home.routes){
-                popUpTo(Routes.AddThreads.routes) {
+            navHostController.navigate(Routes.Home.route) {
+                popUpTo(Routes.AddThreads.route) {
                     inclusive = true
                 }
             }
@@ -125,8 +125,8 @@ fun AddThreads(navHostController: NavHostController) {
                     start.linkTo(parent.start)
                 }
                 .clickable {
-                    navHostController.navigate(Routes.Home.routes){
-                        popUpTo(Routes.AddThreads.routes) {
+                    navHostController.navigate(Routes.Home.route){
+                        popUpTo(Routes.AddThreads.route) {
                             inclusive = true
                         }
                     }

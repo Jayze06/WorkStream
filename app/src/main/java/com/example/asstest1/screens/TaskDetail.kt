@@ -24,22 +24,8 @@ fun TaskDetail(navController: NavController, taskId: String) {
     val tasks by taskViewModel.tasks.observeAsState(emptyList())
     val task = tasks.find { it.id == taskId }
 
-    var progress by remember { mutableStateOf(task?.progress ?: 0) }
-
-    // Create a map to hold memberId to username mapping
-    val userMap = remember { mutableStateMapOf<String, String>() }
-
-    // Fetch user data if task is available
-    task?.let {
-        it.assignedMembers.forEach { memberId ->
-            if (!userMap.containsKey(memberId)) {
-                // Assuming you have a method to fetch user details
-                taskViewModel.getUserById(memberId) { username ->
-                    userMap[memberId] = username ?: "Unknown User"
-                }
-            }
-        }
-    }
+    // Observe userMap from ViewModel
+    val userMap by taskViewModel.userMap.observeAsState(emptyMap())
 
     Scaffold(
         topBar = {
@@ -63,33 +49,76 @@ fun TaskDetail(navController: NavController, taskId: String) {
                 .padding(16.dp)
         ) {
             task?.let {
-                Text("Title: ${it.title}")
+                Text("Title: ${it.title}", style = MaterialTheme.typography.titleLarge)
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Display progress bar
                 LinearProgressIndicator(progress = it.progress / 100f)
+                Text(
+                    text = "Progress: ${it.progress}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
 
-                Text("Progress: ${it.progress}%")
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // List of members with usernames
-                Text("Assigned Members:")
-                it.assignedMembers.forEach { memberId ->
-                    Text("- ${userMap[memberId] ?: memberId}") // Show username if available
+                // List of members with usernames and their progress
+                Text("Assigned Members:", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Column {
+                    it.assignedMembers.forEach { (memberId, memberProgress) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Display username or "User not found"
+                            Text(
+                                text = "- ${userMap[memberId] ?: "User not found"}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "$memberProgress% progress",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Update progress button
-                Button(onClick = { navController.navigate("${Routes.UpdateTaskProgress.routes.replace("{taskId}", taskId)}") }) {
+                // Update Progress Button
+                Button(
+                    onClick = {
+                        navController.navigate("update_task_progress/$taskId")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Update Task Progress")
                 }
 
-                // Generate Report button
-                Button(onClick = { taskViewModel.generateReport(taskId) }) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Generate Report Button
+                Button(
+                    onClick = { taskViewModel.generateReport(taskId) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Generate Report")
+                }
+            } ?: run {
+                // Handle case when task is null (e.g., loading or not found)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
         }
     }
 }
-
-

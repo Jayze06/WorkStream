@@ -33,7 +33,7 @@ fun Tasks(navController: NavController) {
             CenterAlignedTopAppBar(
                 title = { Text("Tasks") },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Routes.AddTask.routes) }) {
+                    IconButton(onClick = { navController.navigate(Routes.AddTask.route) }) {
                         Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add Task")
                     }
                 }
@@ -55,7 +55,7 @@ fun Tasks(navController: NavController) {
                     items(tasks) { task: TaskModel ->
                         TaskItem(task) {
                             // Handle task item click, e.g., navigate to task details or edit screen
-                            navController.navigate("${Routes.TaskDetail.routes}/${task.id}")
+                            navController.navigate("${Routes.TaskDetail.route}/${task.id}")
                         }
                     }
                 }

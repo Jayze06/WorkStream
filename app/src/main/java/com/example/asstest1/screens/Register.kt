@@ -104,7 +104,7 @@ fun Register(navHostController: NavHostController){
 
     LaunchedEffect(firebaseUser) {
         if (firebaseUser!=null){
-            navHostController.navigate(Routes.BottomNav.routes){
+            navHostController.navigate(Routes.BottomNav.route){
                 popUpTo(navHostController.graph.startDestinationId)
                 launchSingleTop = true
             }
@@ -115,7 +115,7 @@ fun Register(navHostController: NavHostController){
         if (registrationSuccess) {
             // Show Toast in the correct context
             Toast.makeText(context, "Registration Successful! Please log in.", Toast.LENGTH_SHORT).show()
-            navHostController.navigate(Routes.Login.routes) {
+            navHostController.navigate(Routes.Login.route) {
                 popUpTo(navHostController.graph.startDestinationId) {
                     inclusive = true // Remove previous screens from the back stack
                 }
@@ -225,7 +225,7 @@ fun Register(navHostController: NavHostController){
 
 
         TextButton(onClick = {
-            navHostController.navigate(Routes.Login.routes){
+            navHostController.navigate(Routes.Login.route){
                 popUpTo(navHostController.graph.startDestinationId)
                 launchSingleTop = true }
                              }, modifier = Modifier.fillMaxWidth()) {

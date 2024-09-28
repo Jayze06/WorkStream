@@ -31,7 +31,7 @@ fun Profile(navHostController: NavHostController) {
 
     LaunchedEffect(firebaseUser) {
         if (firebaseUser == null) {
-            navHostController.navigate(Routes.Login.routes) {
+            navHostController.navigate(Routes.Login.route) {
                 popUpTo(navHostController.graph.startDestinationId) {
                     inclusive = true
                 }

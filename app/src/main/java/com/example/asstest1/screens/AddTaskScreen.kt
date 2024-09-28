@@ -25,10 +25,10 @@ fun AddTaskScreen(navController: NavController) {
 
     var title by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf(0L) }
-    var progress by remember { mutableStateOf(0) }
+    var progress by remember { mutableStateOf(0L) } // Progress as Long
     var dateInput by remember { mutableStateOf("") } // New state variable for date input
     val users by taskViewModel.users.observeAsState(emptyList())
-    var selectedMembers by remember { mutableStateOf(mutableStateListOf<String>()) } // Use mutableStateListOf
+    var selectedMembers by remember { mutableStateOf(mutableStateMapOf<String, Long>()) } // Use Long for progress values
 
     Scaffold(
         topBar = {
@@ -41,10 +41,11 @@ fun AddTaskScreen(navController: NavController) {
                                 id = "",
                                 title = title,
                                 dueDate = dueDate,
-                                progress = progress,
-                                assignedMembers = selectedMembers.toList() // Convert to list before saving
+                                progress = progress, // Now using Long
+                                assignedMembers = selectedMembers // Correct type: Map<String, Long>
                             )
                             taskViewModel.addTask(newTask)
+
                             navController.popBackStack()
                         }
                     }) {
@@ -89,7 +90,7 @@ fun AddTaskScreen(navController: NavController) {
 
             TextField(
                 value = progress.toString(),
-                onValueChange = { progress = it.toIntOrNull() ?: 0 },
+                onValueChange = { progress = it.toLongOrNull() ?: 0L }, // Use Long for progress
                 label = { Text("Progress (0-100)") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -101,7 +102,7 @@ fun AddTaskScreen(navController: NavController) {
                             checked = selectedMembers.contains(user.uid),
                             onCheckedChange = { checked ->
                                 if (checked) {
-                                    selectedMembers.add(user.uid)
+                                    selectedMembers[user.uid] = 0L // Add member with progress 0L
                                 } else {
                                     selectedMembers.remove(user.uid)
                                 }

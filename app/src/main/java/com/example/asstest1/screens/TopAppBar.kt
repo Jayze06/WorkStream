@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.ArrowBack
+import com.example.asstest1.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,8 +22,18 @@ fun TopAppBar(
     onNotificationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val pageTitle = when (title) {
+        Routes.Home.route -> "Home"
+        Routes.Tasks.route -> "Tasks"
+        Routes.AddTask.route -> "Add Task"
+        Routes.TaskDetail.route -> "Task Detail"
+        Routes.Profile.route -> "Profile"
+        Routes.Notification.route -> "Notifications"
+        else -> "App"
+    }
+
     CenterAlignedTopAppBar(
-        title = { Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(pageTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = Color(0xFFFFA500), // Customize your color
             titleContentColor = Color.White

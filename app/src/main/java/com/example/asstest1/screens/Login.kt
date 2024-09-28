@@ -31,7 +31,7 @@ fun Login(navController: NavHostController) {
     // Navigate to Home if login is successful
     LaunchedEffect(firebaseUser) {
         if (firebaseUser != null) {
-            navController.navigate(Routes.Home.routes) { // Navigate to "home" instead of "bottom_nav"
+            navController.navigate(Routes.Home.route) { // Navigate to "home" instead of "bottom_nav"
                 popUpTo("login") { inclusive = true }
                 launchSingleTop = true
             }
@@ -118,7 +118,7 @@ fun Login(navController: NavHostController) {
         // Register button for new users
         TextButton(
             onClick = {
-                navController.navigate(Routes.Register.routes) {
+                navController.navigate(Routes.Register.route) {
                     popUpTo("login") { inclusive = true }
                     launchSingleTop = true
                 }

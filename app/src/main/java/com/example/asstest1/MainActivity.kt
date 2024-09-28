@@ -12,7 +12,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.asstest1.navigation.NavGraph
 import com.example.asstest1.navigation.Routes
+import com.example.asstest1.screens.AppContent
 import com.example.asstest1.screens.MyBottomBar
+import com.example.asstest1.screens.TopAppBar
 import com.example.asstest1.ui.theme.AssTest1Theme
 import com.example.asstest1.viewmodel.AuthViewModel
 
@@ -25,20 +27,9 @@ class MainActivity : ComponentActivity() {
                 val authViewModel: AuthViewModel = viewModel()
                 val firebaseUser by authViewModel.firebaseUser.observeAsState()
 
-                Scaffold(
-                    bottomBar = {
-                        // Show BottomBar only if the user is logged in
-                        if (firebaseUser != null) {
-                            MyBottomBar(navController)
-                        }
-                    }
-                ) { paddingValues ->
-                    NavGraph(
-                        navController = navController,
-                        modifier = Modifier.padding(paddingValues),
-                        startDestination = "login" // Always start at login
-                    )
-                }
+                val startDestination = if (firebaseUser != null) Routes.Home.route else Routes.Login.route
+
+                AppContent(navController)
             }
         }
     }
