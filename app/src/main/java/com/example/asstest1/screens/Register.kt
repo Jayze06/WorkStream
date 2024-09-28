@@ -52,94 +52,67 @@ import com.example.asstest1.navigation.Routes
 import com.example.asstest1.viewmodel.AuthViewModel
 
 @Composable
-fun Register(navHostController: NavHostController){
+fun Register(navHostController: NavHostController) {
 
-    var email by remember{
-        mutableStateOf("")
-    }
-    var name by remember{
-        mutableStateOf("")
-    }
-    var userName by remember{
-        mutableStateOf("")
-    }
-    var bio by remember{
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
-    var imageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
+    var email by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val authViewModel : AuthViewModel = viewModel()
-    val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+    var passwordError by remember { mutableStateOf<String?>(null) } // State for password error
+
+    val authViewModel: AuthViewModel = viewModel()
     val registrationSuccess by authViewModel.registrationSuccess.observeAsState(false)
 
-
-    val permissionToRequest = if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.TIRAMISU){
+    val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         android.Manifest.permission.READ_MEDIA_IMAGES
-    }else android.Manifest.permission.READ_EXTERNAL_STORAGE
-
+    } else android.Manifest.permission.READ_EXTERNAL_STORAGE
 
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()) {
-        uri: Uri? ->
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
         imageUri = uri
     }
 
-   val permissionLauncher = rememberLauncherForActivityResult(
-       contract = ActivityResultContracts.RequestPermission()){
-
-       isGranted : Boolean ->
-       if (isGranted){
-
-       }else{
-
-       }
-   }
-
-    LaunchedEffect(firebaseUser) {
-        if (firebaseUser!=null){
-            navHostController.navigate(Routes.Home.route) {
-                popUpTo(navHostController.graph.startDestinationId)
-                launchSingleTop = true
-            }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            launcher.launch("image/*")
         }
     }
 
+    // Handle registration success to navigate to the login page
     LaunchedEffect(registrationSuccess) {
         if (registrationSuccess) {
-            // Show Toast in the correct context
             Toast.makeText(context, "Registration Successful! Please log in.", Toast.LENGTH_SHORT).show()
             navHostController.navigate(Routes.Login.route) {
                 popUpTo(navHostController.graph.startDestinationId) {
-                    inclusive = true // Remove previous screens from the back stack
+                    inclusive = true // Clear the back stack
                 }
                 launchSingleTop = true
             }
         }
     }
 
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .padding(24.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+        verticalArrangement = Arrangement.Center
+    ) {
 
-        Text(text = "Register here", style = TextStyle(
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp
-            )
-        )
+        Text(text = "Register here", style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 24.sp))
 
         Box(modifier = Modifier.height(20.dp))
 
         Image(
-            painter = if (imageUri==null) painterResource(id = R.drawable.person)
+            painter = if (imageUri == null) painterResource(id = R.drawable.person)
             else rememberAsyncImagePainter(model = imageUri),
             contentDescription = "person",
             modifier = Modifier
@@ -147,102 +120,325 @@ fun Register(navHostController: NavHostController){
                 .clip(CircleShape)
                 .background(Color.LightGray)
                 .clickable {
-                    val isGranted = ContextCompat.checkSelfPermission(
-                        context, permissionToRequest
-                    ) == PackageManager.PERMISSION_GRANTED
-
+                    val isGranted = ContextCompat.checkSelfPermission(context, permissionToRequest) == PackageManager.PERMISSION_GRANTED
                     if (isGranted) {
                         launcher.launch("image/*")
                     } else {
                         permissionLauncher.launch(permissionToRequest)
                     }
                 },
-            contentScale = ContentScale.Crop)
+            contentScale = ContentScale.Crop
+        )
 
         Box(modifier = Modifier.height(50.dp))
 
-        OutlinedTextField(value = email,
-            onValueChange = {email=it},
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
             label = { Text(text = "Email") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
-            ), singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(value = name,
-            onValueChange = {name=it},
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
             label = { Text(text = "Name") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text
-            ), singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(value = bio,
-            onValueChange = {bio=it},
+        OutlinedTextField(
+            value = bio,
+            onValueChange = { bio = it },
             label = { Text(text = "Bio") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
-            ), singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(value = userName,
-            onValueChange = {userName=it},
+        OutlinedTextField(
+            value = userName,
+            onValueChange = { userName = it },
             label = { Text(text = "Username") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
-            ), singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-
-        OutlinedTextField(value = password,
-            onValueChange = {password=it},
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                passwordError = null // Reset error when the user changes the input
+            },
             label = { Text(text = "Password") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password
-            ), singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            isError = passwordError != null // Display red border if there's an error
         )
+
+        // Display the error message if password is invalid
+        if (passwordError != null) {
+            Text(
+                text = passwordError!!,
+                color = Color.Red,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         Box(modifier = Modifier.height(30.dp))
 
-        ElevatedButton(onClick = {
-            if (name.isEmpty() || email.isEmpty() || bio.isEmpty() || password.isEmpty()) {
-                Toast.makeText(context, "Please fill all details", Toast.LENGTH_SHORT).show()
-            } else {
-                // Pass null to the register function if imageUri is null
-                authViewModel.register(email, password, name, bio, userName, imageUri, context)
-            }
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Register Here", style = TextStyle(
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 20.sp
-            ), modifier = Modifier.padding(vertical = 6.dp))
+        ElevatedButton(
+            onClick = {
+                if (name.isEmpty() || email.isEmpty() || bio.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(context, "Please fill all details", Toast.LENGTH_SHORT).show()
+                } else if (!isPasswordValid(password)) {
+                    // If password is invalid, set an error message
+                    passwordError = "Password must be at least 6 characters, and include upper, lower case, and a number."
+                } else {
+                    // Pass null to the register function if imageUri is null
+                    authViewModel.register(email, password, name, bio, userName, imageUri, context)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Register Here",
+                style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 20.sp),
+                modifier = Modifier.padding(vertical = 6.dp)
+            )
         }
 
-
-        TextButton(onClick = {
-            navHostController.navigate(Routes.Login.route){
-                popUpTo(navHostController.graph.startDestinationId)
-                launchSingleTop = true }
-                             }, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Already Register? Login Here",style = TextStyle(
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 16.sp
+        TextButton(
+            onClick = {
+                navHostController.navigate(Routes.Login.route) {
+                    popUpTo(navHostController.graph.startDestinationId)
+                    launchSingleTop = true
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Already Registered? Login Here",
+                style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
             )
-            )
-
         }
     }
 }
 
+// Function to validate the password
+fun isPasswordValid(password: String): Boolean {
+    val hasUpperCase = password.any { it.isUpperCase() }
+    val hasLowerCase = password.any { it.isLowerCase() }
+    val hasDigit = password.any { it.isDigit() }
+    val isValidLength = password.length >= 6
 
+    return hasUpperCase && hasLowerCase && hasDigit && isValidLength
+}
 
 @Preview(showBackground = true)
 @Composable
-fun RegisterView(){
-    //Register()
+fun RegisterView() {
+    // Register() to test UI
 }
+
+
+//@Composable
+//fun Register(navHostController: NavHostController){
+//
+//    var email by remember{
+//        mutableStateOf("")
+//    }
+//    var name by remember{
+//        mutableStateOf("")
+//    }
+//    var userName by remember{
+//        mutableStateOf("")
+//    }
+//    var bio by remember{
+//        mutableStateOf("")
+//    }
+//    var password by remember {
+//        mutableStateOf("")
+//    }
+//    var imageUri by remember {
+//        mutableStateOf<Uri?>(null)
+//    }
+//
+//    val authViewModel : AuthViewModel = viewModel()
+//    val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+//    val registrationSuccess by authViewModel.registrationSuccess.observeAsState(false)
+//
+//
+//    val permissionToRequest = if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.TIRAMISU){
+//        android.Manifest.permission.READ_MEDIA_IMAGES
+//    }else android.Manifest.permission.READ_EXTERNAL_STORAGE
+//
+//
+//    val context = LocalContext.current
+//
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.GetContent()) {
+//        uri: Uri? ->
+//        imageUri = uri
+//    }
+//
+//   val permissionLauncher = rememberLauncherForActivityResult(
+//       contract = ActivityResultContracts.RequestPermission()){
+//
+//       isGranted : Boolean ->
+//       if (isGranted){
+//
+//       }else{
+//
+//       }
+//   }
+//
+//    LaunchedEffect(firebaseUser) {
+//        if (firebaseUser!=null){
+//            navHostController.navigate(Routes.Home.route) {
+//                popUpTo(navHostController.graph.startDestinationId)
+//                launchSingleTop = true
+//            }
+//        }
+//    }
+//
+//    LaunchedEffect(registrationSuccess) {
+//        if (registrationSuccess) {
+//            // Show Toast in the correct context
+//            Toast.makeText(context, "Registration Successful! Please log in.", Toast.LENGTH_SHORT).show()
+//            navHostController.navigate(Routes.Login.route) {
+//                popUpTo(navHostController.graph.startDestinationId) {
+//                    inclusive = true // Remove previous screens from the back stack
+//                }
+//                launchSingleTop = true
+//            }
+//        }
+//    }
+//
+//    Column (modifier = Modifier
+//        .fillMaxSize()
+//        .padding(24.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center) {
+//
+//        Text(text = "Register here", style = TextStyle(
+//            fontWeight = FontWeight.ExtraBold,
+//            fontSize = 24.sp
+//            )
+//        )
+//
+//        Box(modifier = Modifier.height(20.dp))
+//
+//        Image(
+//            painter = if (imageUri==null) painterResource(id = R.drawable.person)
+//            else rememberAsyncImagePainter(model = imageUri),
+//            contentDescription = "person",
+//            modifier = Modifier
+//                .size(96.dp)
+//                .clip(CircleShape)
+//                .background(Color.LightGray)
+//                .clickable {
+//                    val isGranted = ContextCompat.checkSelfPermission(
+//                        context, permissionToRequest
+//                    ) == PackageManager.PERMISSION_GRANTED
+//
+//                    if (isGranted) {
+//                        launcher.launch("image/*")
+//                    } else {
+//                        permissionLauncher.launch(permissionToRequest)
+//                    }
+//                },
+//            contentScale = ContentScale.Crop)
+//
+//        Box(modifier = Modifier.height(50.dp))
+//
+//        OutlinedTextField(value = email,
+//            onValueChange = {email=it},
+//            label = { Text(text = "Email") },
+//            keyboardOptions = KeyboardOptions(
+//                keyboardType = KeyboardType.Email
+//            ), singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(value = name,
+//            onValueChange = {name=it},
+//            label = { Text(text = "Name") },
+//            keyboardOptions = KeyboardOptions(
+//                keyboardType = KeyboardType.Text
+//            ), singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(value = bio,
+//            onValueChange = {bio=it},
+//            label = { Text(text = "Bio") },
+//            keyboardOptions = KeyboardOptions(
+//                keyboardType = KeyboardType.Email
+//            ), singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(value = userName,
+//            onValueChange = {userName=it},
+//            label = { Text(text = "Username") },
+//            keyboardOptions = KeyboardOptions(
+//                keyboardType = KeyboardType.Email
+//            ), singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//
+//        OutlinedTextField(value = password,
+//            onValueChange = {password=it},
+//            label = { Text(text = "Password") },
+//            keyboardOptions = KeyboardOptions(
+//                keyboardType = KeyboardType.Password
+//            ), singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Box(modifier = Modifier.height(30.dp))
+//
+//        ElevatedButton(onClick = {
+//            if (name.isEmpty() || email.isEmpty() || bio.isEmpty() || password.isEmpty()) {
+//                Toast.makeText(context, "Please fill all details", Toast.LENGTH_SHORT).show()
+//            } else {
+//                // Pass null to the register function if imageUri is null
+//                authViewModel.register(email, password, name, bio, userName, imageUri, context)
+//            }
+//        }, modifier = Modifier.fillMaxWidth()) {
+//            Text(text = "Register Here", style = TextStyle(
+//                fontWeight = FontWeight.ExtraBold,
+//                fontSize = 20.sp
+//            ), modifier = Modifier.padding(vertical = 6.dp))
+//        }
+//
+//
+//        TextButton(onClick = {
+//            navHostController.navigate(Routes.Login.route){
+//                popUpTo(navHostController.graph.startDestinationId)
+//                launchSingleTop = true }
+//                             }, modifier = Modifier.fillMaxWidth()) {
+//            Text(text = "Already Register? Login Here",style = TextStyle(
+//                fontWeight = FontWeight.ExtraBold,
+//                fontSize = 16.sp
+//            )
+//            )
+//
+//        }
+//    }
+//}
+//
+//
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun RegisterView(){
+//    //Register()
+//}

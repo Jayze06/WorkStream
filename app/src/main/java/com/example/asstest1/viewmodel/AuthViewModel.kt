@@ -49,16 +49,14 @@ class AuthViewModel : ViewModel() {
         _firebaseUser.value = auth.currentUser
     }
 
-    fun login(email: String, password: String, context: Context){
-
-        auth.signInWithEmailAndPassword(email,password)
-            .addOnCompleteListener {
-                if (it.isSuccessful){
+    fun login(email: String, password: String, context: Context) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
                     _firebaseUser.postValue(auth.currentUser)
-
                     getData(auth.currentUser!!.uid, context)
-                }else{
-                    _error.postValue(it.exception!!.message)
+                } else {
+                    _error.postValue(task.exception?.message ?: "Login failed.")
                 }
             }
     }
@@ -90,7 +88,6 @@ class AuthViewModel : ViewModel() {
     }
 
 
-
     fun register(
         email: String,
         password: String,
@@ -100,29 +97,76 @@ class AuthViewModel : ViewModel() {
         imageUri: Uri?,
         context: Context
     ) {
-        // Create the user with email and password
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _firebaseUser.postValue(auth.currentUser)
-
-                    // Log success
-                    _registrationSuccess.postValue(true)
-
-                    // Check for the image upload and user data saving process
-                    if (imageUri != null) {
-                        saveImage(email, password, name, bio, userName, imageUri, auth.currentUser?.uid, context)
+                    val uid = auth.currentUser?.uid
+                    if (uid != null) {
+                        if (imageUri != null) {
+                            // Save image and user data
+                            saveImage(
+                                email, password, name, bio, userName, imageUri, uid, context
+                            ) {
+                                // After saving data, sign out the user
+                                auth.signOut()
+                                _firebaseUser.postValue(null)
+                                _registrationSuccess.postValue(true)
+                            }
+                        } else {
+                            // Save user data without image
+                            saveDataWithoutImage(
+                                email, password, name, bio, userName, uid, context
+                            ) {
+                                // After saving data, sign out the user
+                                auth.signOut()
+                                _firebaseUser.postValue(null)
+                                _registrationSuccess.postValue(true)
+                            }
+                        }
                     } else {
-                        saveDataWithoutImage(email, password, name, bio, userName, auth.currentUser?.uid, context)
+                        _error.postValue("User ID is null after registration.")
                     }
-
                 } else {
-                    // Log any errors if registration fails
                     _registrationSuccess.postValue(false)
-                    _error.postValue(task.exception?.message ?: "Something went wrong during registration.")
+                    _error.postValue(task.exception?.message ?: "Registration failed.")
                 }
             }
     }
+
+
+
+//    fun register(
+//        email: String,
+//        password: String,
+//        name: String,
+//        bio: String,
+//        userName: String,
+//        imageUri: Uri?,
+//        context: Context
+//    ) {
+//        // Create the user with email and password
+//        auth.createUserWithEmailAndPassword(email, password)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    _firebaseUser.postValue(auth.currentUser)
+//
+//                    // Log success
+//                    _registrationSuccess.postValue(true)
+//
+//                    // Check for the image upload and user data saving process
+//                    if (imageUri != null) {
+//                        saveImage(email, password, name, bio, userName, imageUri, auth.currentUser?.uid, context)
+//                    } else {
+//                        saveDataWithoutImage(email, password, name, bio, userName, auth.currentUser?.uid, context)
+//                    }
+//
+//                } else {
+//                    // Log any errors if registration fails
+//                    _registrationSuccess.postValue(false)
+//                    _error.postValue(task.exception?.message ?: "Something went wrong during registration.")
+//                }
+//            }
+//    }
 
 
 
@@ -163,16 +207,27 @@ class AuthViewModel : ViewModel() {
         bio: String,
         userName: String,
         imageUri: Uri,
-        uid: String?,
-        context: Context
+        uid: String,
+        context: Context,
+        onComplete: () -> Unit
     ) {
-        val uploadTask = imageRef.putFile(imageUri)
-        uploadTask.addOnSuccessListener {
-            imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                saveData(email, password, name, bio, userName, downloadUrl.toString(), uid, context) // Pass downloadUrl as nullable String
+        val imagePath = "users/$uid/profile.jpg" // Use UID for consistent image path
+        val newImageRef = storageRef.child(imagePath)
+        newImageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                newImageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                    saveData(
+                        email, password, name, bio, userName, downloadUrl.toString(), uid, context
+                    ) {
+                        onComplete()
+                    }
+                }
             }
-        }
+            .addOnFailureListener { exception ->
+                _error.postValue(exception.message ?: "Failed to upload image.")
+            }
     }
+
 
 
     private fun saveDataWithoutImage(
@@ -181,21 +236,21 @@ class AuthViewModel : ViewModel() {
         name: String,
         bio: String,
         userName: String,
-        uid: String?,
-        context: Context
+        uid: String,
+        context: Context,
+        onComplete: () -> Unit
     ) {
-        if (uid != null) {
-            val userData = UserModel(email, password, name, bio, userName, null, uid)
-            userRef.child(uid).setValue(userData)
-                .addOnSuccessListener {
-                    SharedPref.storeData(name, email, bio, userName, null, context) // Pass null for imageUrl
-                }.addOnFailureListener {
-                    // Handle the error
-                }
-        } else {
-            // Handle the case when uid is null
-        }
+        val userData = UserModel(email, password, name, bio, userName, null, uid)
+        userRef.child(uid).setValue(userData)
+            .addOnSuccessListener {
+                SharedPref.storeData(name, email, bio, userName, null, context)
+                onComplete()
+            }
+            .addOnFailureListener { exception ->
+                _error.postValue(exception.message ?: "Failed to save user data.")
+            }
     }
+
 
 
 
@@ -206,21 +261,20 @@ class AuthViewModel : ViewModel() {
         name: String,
         bio: String,
         userName: String,
-        imageUrl: String?, // Keep this as nullable
-        uid: String?,
-        context: Context
+        imageUrl: String?,
+        uid: String,
+        context: Context,
+        onComplete: () -> Unit
     ) {
-        if (uid != null) {
-            val userData = UserModel(email, password, name, bio, userName, imageUrl, uid)
-            userRef.child(uid).setValue(userData)
-                .addOnSuccessListener {
-                    SharedPref.storeData(name, email, bio, userName, imageUrl, context)
-                }.addOnFailureListener {
-                    // Handle the error
-                }
-        } else {
-            // Handle the case when uid is null
-        }
+        val userData = UserModel(email, password, name, bio, userName, imageUrl, uid)
+        userRef.child(uid).setValue(userData)
+            .addOnSuccessListener {
+                SharedPref.storeData(name, email, bio, userName, imageUrl, context)
+                onComplete()
+            }
+            .addOnFailureListener { exception ->
+                _error.postValue(exception.message ?: "Failed to save user data.")
+            }
     }
 
 
