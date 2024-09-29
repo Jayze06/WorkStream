@@ -28,9 +28,8 @@ fun MyBottomBar(navController: NavHostController) {
     // Define your bottom navigation items
     val list = listOf(
         BottomNavItem("Home", Routes.Home.route, Icons.Rounded.Home),
-        BottomNavItem("Tasks", Routes.Tasks.route, Icons.Rounded.Menu), // Dashboard icon for Tasks
-        //BottomNavItem("Threads", Routes.AddThreads.route, Icons.Rounded.Share), // Speech bubble icon for Threads
-        BottomNavItem("Discussion", Routes.AddDiscussions.route, Icons.Rounded.Share), // Speech bubble icon for Discussion
+        BottomNavItem("Tasks", Routes.Tasks.route, Icons.Rounded.Menu),
+        BottomNavItem("Discussion", Routes.AddDiscussions.route, Icons.Rounded.Share),
         BottomNavItem("Profile", Routes.Profile.route, Icons.Rounded.Person)
     )
 
@@ -55,98 +54,3 @@ fun MyBottomBar(navController: NavHostController) {
         }
     }
 }
-
-
-
-
-
-/*  //V1
-@Composable
-fun BottomNav(navController: NavHostController){
-
-    val navController1 = rememberNavController()
-
-    Scaffold(bottomBar= { MyBottomBar(navController1) }) { innerPadding ->
-        NavHost(navController = navController1, startDestination = Routes.Home.routes,
-            modifier = androidx.compose.ui.Modifier.padding(innerPadding)){
-            composable(route = Routes.Home.routes){
-                Home(navController)
-            }
-
-            composable(Routes.Notification.routes){
-                Notification()
-            }
-
-            composable(Routes.AddThreads.routes){
-                AddThreads(navController1)
-            }
-
-            composable(Routes.Profile.routes){
-                Profile(navController)
-            }
-
-            composable(Routes.Search.routes) {
-                Search()
-            }
-        }
-
-    }
-
-}
-
-@Composable
-fun MyBottomBar(navController1: NavHostController) {
-
-    val backStackEntry = navController1.currentBackStackEntryAsState()
-
-    val list = listOf(
-        BottomNavItem(
-            "Home",
-            Routes.Home.routes,
-            Icons.Rounded.Home
-        ),
-        BottomNavItem(
-            "Search",
-            Routes.Search.routes,
-            Icons.Rounded.Search
-        ),
-        BottomNavItem(
-            "Add Threads",
-            Routes.AddThreads.routes,
-            Icons.Rounded.Add
-        ),
-        BottomNavItem(
-            "Notification",
-            Routes.Notification.routes,
-            Icons.Rounded.Notifications
-        ),
-        BottomNavItem(
-            "Profile",
-            Routes.Profile.routes,
-            Icons.Rounded.Person
-        )
-    )
-
-    BottomAppBar {
-
-        list.forEach {
-
-            val selected = it.route ==backStackEntry?.value?.destination?.route
-
-            NavigationBarItem(selected = selected, onClick = {
-                navController1.navigate(it.route){
-                    popUpTo(navController1.graph.findStartDestination().id){
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                }
-            },icon = {
-                Icon(imageVector = it.icon, contentDescription = it.title)
-            })
-        }
-    }
-}
-
-*/
-
-//V2

@@ -30,15 +30,13 @@ fun TopAppBar(
         Routes.AddDiscussions.route -> "Discussion"
         Routes.UpdateTaskProgress.route -> "Update Task"
         Routes.Profile.route -> "Profile"
-        Routes.Notification.route -> "Notifications"
-        //Routes.TaskDetail.route -> "Task Details"
         else -> "App"
     }
 
     CenterAlignedTopAppBar(
         title = { Text(pageTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFFFA500), // Customize your color
+            containerColor = Color(0xFFFFA500),
             titleContentColor = Color.White
         ),
         modifier = modifier,

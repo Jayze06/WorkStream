@@ -5,5 +5,5 @@ data class TaskModel(
     val title: String = "",
     val dueDate: Long = 0L,
     val progress: Long = 0L,
-    val assignedMembers: Map<String, Long> = emptyMap()  // Ensure this matches Firebase structure
+    val assignedMembers: Map<String, Long> = emptyMap()
 )

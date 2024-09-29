@@ -31,7 +31,7 @@ fun TaskItem(task: TaskModel, onClick: () -> Unit) {
             val formattedDate = dateFormat.format(Date(task.dueDate))
             Text(text = "Due: $formattedDate", style = MaterialTheme.typography.bodyMedium)
 
-            Text(text = "Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)  // Correctly displaying progress
+            Text(text = "Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

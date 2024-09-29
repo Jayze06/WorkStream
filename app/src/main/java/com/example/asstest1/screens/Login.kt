@@ -31,14 +31,13 @@ fun Login(navController: NavHostController) {
     // Navigate to Home if login is successful
     LaunchedEffect(firebaseUser) {
         if (firebaseUser != null) {
-            navController.navigate(Routes.Home.route) { // Navigate to "home" instead of "bottom_nav"
+            navController.navigate(Routes.Home.route) { // Navigate to "home"
                 popUpTo("login") { inclusive = true }
                 launchSingleTop = true
             }
         }
     }
 
-    // Show error as Toast if login fails
     val context = LocalContext.current
     error?.let { errorMessage ->
         Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
@@ -139,8 +138,6 @@ fun Login(navController: NavHostController) {
 @Preview(showBackground = true)
 @Composable
 fun LoginViewPreview() {
-    // This preview is not fully functional without a NavController,
-    // but you can test the UI layout.
     Box(modifier = Modifier.fillMaxSize()) {
         Text(text = "Login View Preview")
     }

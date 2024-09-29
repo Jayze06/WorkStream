@@ -30,7 +30,7 @@ fun AppContent(navController: NavHostController) {
                     title = currentScreen,
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    onNotificationClick = { /* Handle notification click */ }
+                    onNotificationClick = {  }
                 )
             }
         },

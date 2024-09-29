@@ -36,7 +36,6 @@ fun Tasks(navController: NavController) {
     var showCompletedTasks by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
 
-    // Filter tasks based on the toggle state (Completed or Pending)
     val filteredTasks = if (showCompletedTasks) {
         tasks.filter { it.progress == 100L } // Completed tasks
     } else {
@@ -110,42 +109,3 @@ fun Tasks(navController: NavController) {
         }
     }
 }
-//@Composable
-//fun TaskItem(task: TaskModel, onClick: () -> Unit) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clickable(onClick = onClick)
-//            .padding(vertical = 4.dp),
-//        elevation = CardDefaults.elevatedCardElevation()
-//    ) {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text("Task: ${task.title}", style = MaterialTheme.typography.titleMedium)
-//            Text("Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)
-//        }
-//    }
-//}
-/*@Composable
-fun TaskItem(task: TaskModel, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.elevatedCardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(text = task.title, style = MaterialTheme.typography.bodyLarge)
-
-            // Format due date
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val formattedDate = dateFormat.format(Date(task.dueDate))
-            Text(text = "Due: $formattedDate", style = MaterialTheme.typography.bodyMedium)
-
-            Text(text = "Progress: ${task.progress}%", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-*/

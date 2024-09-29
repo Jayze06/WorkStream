@@ -28,10 +28,10 @@ fun AddTaskScreen(navController: NavController) {
 
     var title by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf(0L) }
-    var progress by remember { mutableStateOf(0L) } // Progress as Long
-    var dateInput by remember { mutableStateOf("") } // New state variable for date input
+    var progress by remember { mutableStateOf(0L) }
+    var dateInput by remember { mutableStateOf("") }
     val users by taskViewModel.users.observeAsState(emptyList())
-    var selectedMembers by remember { mutableStateOf(mutableStateMapOf<String, Long>()) } // Use Long for progress values
+    var selectedMembers by remember { mutableStateOf(mutableStateMapOf<String, Long>()) }
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -47,8 +47,8 @@ fun AddTaskScreen(navController: NavController) {
                                 id = "",
                                 title = title,
                                 dueDate = dueDate,
-                                progress = progress, // Now using Long
-                                assignedMembers = selectedMembers // Correct type: Map<String, Long>
+                                progress = progress,
+                                assignedMembers = selectedMembers
                             )
                             taskViewModel.addTask(newTask)
                             navController.popBackStack()
@@ -82,7 +82,8 @@ fun AddTaskScreen(navController: NavController) {
                     onValueChange = { newValue ->
                         dateInput = newValue
                         dueDate = try {
-                            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(newValue)?.time ?: 0L
+                            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                                .parse(newValue)?.time ?: 0L
                         } catch (e: Exception) {
                             0L
                         }
@@ -95,7 +96,7 @@ fun AddTaskScreen(navController: NavController) {
             item {
                 TextField(
                     value = progress.toString(),
-                    onValueChange = { progress = it.toLongOrNull() ?: 0L }, // Use Long for progress
+                    onValueChange = { progress = it.toLongOrNull() ?: 0L },
                     label = { Text("Progress (0-100)") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -107,7 +108,7 @@ fun AddTaskScreen(navController: NavController) {
                         checked = selectedMembers.contains(user.uid),
                         onCheckedChange = { checked ->
                             if (checked) {
-                                selectedMembers[user.uid] = 0L // Add member with progress 0L
+                                selectedMembers[user.uid] = 0L
                             } else {
                                 selectedMembers.remove(user.uid)
                             }

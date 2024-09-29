@@ -7,29 +7,45 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import com.example.asstest1.viewmodel.AuthViewModel
-import com.example.asstest1.navigation.Routes
-import androidx.compose.ui.graphics.Color
-
-// Necessary imports for state delegation
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -38,13 +54,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.asstest1.R
 import com.example.asstest1.model.UserModel
+import com.example.asstest1.navigation.Routes
+import com.example.asstest1.viewmodel.AuthViewModel
 import com.example.asstest1.viewmodel.TaskViewModel
-import com.google.android.gms.tasks.Task
 
 @Composable
 fun Profile(navHostController: NavHostController) {
@@ -174,77 +194,85 @@ fun LandscapeProfileLayout(
     onShowPasswordDialog: () -> Unit,
     onLogout: () -> Unit
 ) {
+    // Scroll state for vertical scrolling
     val scrollState = rememberScrollState()
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(16.dp)
+    ) {
 
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(scrollState)
-        .padding(16.dp)
-    ){
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp),
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Column (modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-                .border(1.dp, Color.Gray.copy(alpha = 0.1f),
-                    RoundedCornerShape(8.dp))
-                .background(Color.White, RoundedCornerShape(8.dp))
-                .padding(16.dp),
-                horizontalAlignment = Alignment.Start)
-            {
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+                    .border(1.dp, Color.Gray.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
                 Text(
-                    text = "Assigned Tasks",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold),
+                    text = "Profile",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 ProfileContent(userData, onUpdateProfilePicture)
             }
 
-            Column (modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp)
-                .border(1.dp, Color.Gray.copy(alpha = 0.1f),
-                    RoundedCornerShape(8.dp))
-                .background(Color.White, RoundedCornerShape(8.dp))
-                .padding(16.dp),
-                horizontalAlignment = Alignment.Start)
-            {
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp)
+                    .border(1.dp, Color.Gray.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .padding(16.dp)
+                    .heightIn(max = 300.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
                 Text(
                     text = "Assigned Tasks",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                TaskTitlesSection(userTaskTitles)
+
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxHeight(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(userTaskTitles) { taskTitle ->
+                        Text(text = taskTitle, modifier = Modifier.padding(vertical = 4.dp))
+                    }
+                }
             }
         }
-        Column (modifier = Modifier
-            .weight(1f)
-            .padding(end = 8.dp)
-            .border(1.dp, Color.Gray.copy(alpha = 0.1f),
-                RoundedCornerShape(8.dp))
-            .background(Color.White, RoundedCornerShape(8.dp))
-            .padding(16.dp),
-            horizontalAlignment = Alignment.Start)
-        {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.Gray.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                .background(Color.White, RoundedCornerShape(8.dp))
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = "Assigned Tasks",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold),
+                text = "Actions",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            ProfileButtons(onShowUsernameDialog, onShowPasswordDialog,
-                onLogout)
+            ProfileButtons(onShowUsernameDialog, onShowPasswordDialog, onLogout)
         }
     }
-
 }
 
 @Composable
@@ -297,7 +325,7 @@ fun ProfileContent(
 
     Surface(
         modifier = Modifier
-            .wrapContentWidth()  // Ensure the content doesn't take up unnecessary space
+            .wrapContentWidth()
             .padding(horizontal = 16.dp),
         shape = MaterialTheme.shapes.medium,
         tonalElevation = 4.dp,
@@ -509,185 +537,3 @@ fun PasswordDialog(
         }
     )
 }
-
-// final no changes
-
-/*
-@Composable
-fun Profile(navHostController: NavHostController) {
-    val authViewModel: AuthViewModel = viewModel()
-    val firebaseUser by authViewModel.firebaseUser.observeAsState()
-    val userData by authViewModel.userData.observeAsState()
-
-    var showUsernameDialog by remember { mutableStateOf(false) }
-    var showPasswordDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(firebaseUser) {
-        if (firebaseUser == null) {
-            navHostController.navigate(Routes.Login.route) {
-                popUpTo(navHostController.graph.startDestinationId) {
-                    inclusive = true
-                }
-                launchSingleTop = true
-            }
-        } else {
-            authViewModel.fetchUserData(firebaseUser?.uid ?: "")
-        }
-    }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Profile", style = MaterialTheme.typography.headlineSmall)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Show user info
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = "Name: ${userData?.name ?: "Loading..."}")
-                Text(text = "Email: ${userData?.email ?: "Loading..."}")
-                Text(text = "Bio: ${userData?.bio ?: "No bio available"}")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Update Profile Button
-        Button(onClick = { showUsernameDialog = true }) {
-            Text(text = "Update Profile")
-        }
-
-        if (showUsernameDialog) {
-            ProfileDialog(
-                currentName = userData?.name ?: "",
-                currentBio = userData?.bio ?: "",
-                currentEmail = userData?.email ?: "",
-                onConfirm = { name, bio, email ->
-                    authViewModel.updateUserProfile(name, bio, email, null) // Pass imageUri as null for now
-                    showUsernameDialog = false
-                    authViewModel.fetchUserData(firebaseUser?.uid ?: "") // Refresh data after update
-                },
-                onDismiss = { showUsernameDialog = false }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Update Password Section
-        Button(onClick = { showPasswordDialog = true }) {
-            Text(text = "Update Password")
-        }
-
-        if (showPasswordDialog) {
-            PasswordDialog(
-                onConfirm = { oldPass, newPass ->
-                    authViewModel.updatePassword(oldPass, newPass)
-                    showPasswordDialog = false
-                    authViewModel.fetchUserData(firebaseUser?.uid ?: "") // Optionally refresh data
-                },
-                onDismiss = { showPasswordDialog = false }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Logout button
-        Button(onClick = { authViewModel.logout() }) {
-            Text(text = "Logout")
-        }
-    }
-}
-
-
-
-
-@Composable
-fun ProfileDialog(
-    currentName: String,
-    currentBio: String,
-    currentEmail: String,
-    onConfirm: (String, String, String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var name by remember { mutableStateOf(currentName) }
-    var bio by remember { mutableStateOf(currentBio) }
-    var email by remember { mutableStateOf(currentEmail) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = "Update Profile") },
-        text = {
-            Column {
-                TextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") }
-                )
-                TextField(
-                    value = bio,
-                    onValueChange = { bio = it },
-                    label = { Text("Bio") }
-                )
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") }
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onConfirm(name, bio, email) }) {
-                Text("Update")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-
-@Composable
-fun PasswordDialog(
-    onConfirm: (String, String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var currentPass by remember { mutableStateOf("") }
-    var newPass by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Update Password") },
-        text = {
-            Column {
-                TextField(
-                    value = currentPass,
-                    onValueChange = { currentPass = it },
-                    label = { Text("Current Password") },
-                    visualTransformation = PasswordVisualTransformation()
-                )
-                TextField(
-                    value = newPass,
-                    onValueChange = { newPass = it },
-                    label = { Text("New Password") },
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        },
-        confirmButton = {
-            Button(onClick = { onConfirm(currentPass, newPass) }) {
-                Text("Update Password")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-*/

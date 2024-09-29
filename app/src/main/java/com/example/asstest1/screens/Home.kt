@@ -42,9 +42,9 @@ fun Home(navHostController: NavHostController) {
     val configuration = LocalConfiguration.current
 
     val filteredTasks = if (showCompletedTasks) {
-        tasks.filter { it.progress == 100L } // Completed tasks
+        tasks.filter { it.progress == 100L }
     } else {
-        tasks.filter { it.progress < 100L } // Ongoing tasks
+        tasks.filter { it.progress < 100L }
     }
 
 

@@ -108,7 +108,6 @@ fun AddDiscussionPortrait(navHostController: NavHostController) {
             }
         }
     }
-
     // Portrait Layout
     ConstraintLayout(
         modifier = Modifier
@@ -263,7 +262,6 @@ fun AddDiscussionPortrait(navHostController: NavHostController) {
 
 @Composable
 fun AddDiscussionLandscape(navHostController: NavHostController) {
-    // Duplicate the logic but adjust the UI elements for landscape mode
 
     val discussionViewModel: AddDiscussionViewModel = viewModel()
     val isPosted by discussionViewModel.isPosted.observeAsState(false)
@@ -329,7 +327,7 @@ fun AddDiscussionLandscape(navHostController: NavHostController) {
 
         Text(
             text = "Add Discussion",
-            style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 28.sp), // Bigger size for landscape
+            style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 28.sp),
             modifier = Modifier.constrainAs(text) {
                 top.linkTo(crossPic.top)
                 start.linkTo(crossPic.end, margin = 12.dp)
@@ -345,14 +343,14 @@ fun AddDiscussionLandscape(navHostController: NavHostController) {
                     top.linkTo(text.bottom, margin = 8.dp)
                     start.linkTo(parent.start)
                 }
-                .size(48.dp) // Bigger image for landscape
+                .size(48.dp)
                 .clip(CircleShape),
             contentScale = ContentScale.Crop
         )
 
         Text(
             text = SharedPref.getUserName(context),
-            style = TextStyle(fontSize = 24.sp), // Bigger text for landscape
+            style = TextStyle(fontSize = 24.sp),
             modifier = Modifier.constrainAs(userName) {
                 top.linkTo(logo.top)
                 start.linkTo(logo.end, margin = 12.dp)
@@ -380,7 +378,7 @@ fun AddDiscussionLandscape(navHostController: NavHostController) {
                 contentDescription = "attach",
                 modifier = Modifier
                     .constrainAs(attachMedia) {
-                        top.linkTo(parent.top) // Attach button to top in landscape
+                        top.linkTo(parent.top)
                         end.linkTo(parent.end)
                         bottom.linkTo(editText.bottom)
                     }

@@ -31,7 +31,6 @@ fun Splash(navController: NavHostController) {
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "logo",
             modifier = Modifier.constrainAs(image) {
-                // Link to the parent layout's top, bottom, start, and end for centering
                 top.linkTo(parent.top)
                 bottom.linkTo(parent.bottom)
                 start.linkTo(parent.start)
