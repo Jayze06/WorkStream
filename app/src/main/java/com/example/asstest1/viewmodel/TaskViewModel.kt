@@ -21,6 +21,9 @@ class TaskViewModel : ViewModel() {
     private val taskReference = db.getReference("tasks")
     private val userReference = db.getReference("users")
 
+    private val _userTaskTitles = MutableLiveData<List<String>>()
+    val userTaskTitles: LiveData<List<String>> = _userTaskTitles
+
     // LiveData for tasks and users
     private val _tasks = MutableLiveData<List<TaskModel>>()
     val tasks: LiveData<List<TaskModel>> = _tasks
@@ -286,5 +289,27 @@ class TaskViewModel : ViewModel() {
             }
     }
 
+    fun fetchUserTaskTitles(userId: String) {
+        viewModelScope.launch {
+            try {
+                val snapshot = taskReference.get().await()
+                val taskTitles = mutableListOf<String>()
+                snapshot.children.forEach {
+                    childSnapshot ->
+                    val task = childSnapshot.getValue(TaskModel::class.java)
+                    if (task != null && userId in task.assignedMembers.keys){
+                        taskTitles.add(task.title)
+                    }
+                }
+
+                _userTaskTitles.value = taskTitles
+
+                Log.d("TaskViewModel","Fetched task titles for user $userId:$taskTitles")
+            }catch (exception: Exception){
+                Log.e("TaskViewModel","Error fetching tasl titles for user $userId", exception)
+            }
+
+        }
+    }
 
 }

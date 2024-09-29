@@ -18,7 +18,7 @@ fun AppContent(navController: NavHostController) {
     val currentScreen = backStackEntry.value?.destination?.route ?: Routes.Home.route
 
     // List of routes where the TopAppBar and BottomNav should be hidden
-    val hideTopAndBottomBarRoutes = listOf(Routes.Login.route, Routes.Register.route)
+    val hideTopAndBottomBarRoutes = listOf(Routes.Login.route, Routes.Register.route,Routes.Splash.route)
 
     // Determine if the current screen should hide the TopAppBar and BottomNav
     val shouldShowBars = currentScreen !in hideTopAndBottomBarRoutes
@@ -43,7 +43,7 @@ fun AppContent(navController: NavHostController) {
         NavGraph(
             navController = navController,
             modifier = Modifier.padding(innerPadding),
-            startDestination = Routes.Login.route
+            startDestination = Routes.Splash.route
         )
     }
 }

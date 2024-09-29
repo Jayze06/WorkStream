@@ -79,7 +79,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-beta01")
 
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-analytics:22.1.0")
     implementation("com.google.firebase:firebase-auth:23.0.0")
     implementation("com.google.firebase:firebase-storage:21.0.0")
     implementation("com.google.firebase:firebase-database:21.0.0")

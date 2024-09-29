@@ -4,10 +4,8 @@ sealed class Routes(val route: String) {
     object Home : Routes("home")
     object Notification : Routes("notification")
     object Profile : Routes("profile")
-    object Search : Routes("search")
-    object Splash : Routes("splash")
-    object AddThreads : Routes("add_threads")
-    object BottomNav : Routes("bottom_nav")
+    object Splash : Routes("Splash")
+    object AddDiscussions : Routes("add_discussions")//adddiscussion
     object Login : Routes("login")
     object Register : Routes("register")
     object Tasks : Routes("tasks")

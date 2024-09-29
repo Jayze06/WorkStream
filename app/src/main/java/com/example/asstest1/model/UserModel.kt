@@ -7,5 +7,6 @@ data class UserModel(
     val bio: String = " ",
     val userName: String = " ",
     val imageUrl: String? = null,
-    val uid: String = " "
+    val uid: String = " ",
+    val taskIds: List<String> = listOf()
 )

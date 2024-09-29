@@ -1,9 +1,9 @@
 package com.example.asstest1.model
 
-data class ThreadModel(
+data class DiscussionModel(
 
-    val thread:String = "",
+    val discussion:String = "",
     val image:String = "",
     val userId:String = "",
-    val timeStamp:String = ""
+    val timeStamp: String = ""
 )

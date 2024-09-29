@@ -4,10 +4,13 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,23 +37,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.asstest1.R
 import com.example.asstest1.model.UserModel
+import com.example.asstest1.viewmodel.TaskViewModel
+import com.google.android.gms.tasks.Task
 
 @Composable
 fun Profile(navHostController: NavHostController) {
     val authViewModel: AuthViewModel = viewModel()
+    val taskViewModel: TaskViewModel = viewModel()
     val firebaseUser by authViewModel.firebaseUser.observeAsState()
     val userData by authViewModel.userData.observeAsState()
+    val userTaskTitles by taskViewModel.userTaskTitles.observeAsState(listOf())
 
     var showUsernameDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
+    val isPortrait = configuration.orientation ==
+            android.content.res.Configuration.ORIENTATION_PORTRAIT
 
     // Redirect to login if not logged in
     LaunchedEffect(firebaseUser) {
@@ -63,14 +72,17 @@ fun Profile(navHostController: NavHostController) {
             }
         } else {
             authViewModel.fetchUserData(firebaseUser?.uid ?: "")
+            taskViewModel.fetchUserTaskTitles(firebaseUser?.uid?:"")
         }
     }
 
     if (isPortrait) {
         PortraitProfileLayout(
             userData = userData,
+            userTaskTitles = userTaskTitles,
             onUpdateProfilePicture = { uri ->
-                authViewModel.updateUserProfile(userData?.name ?: "", userData?.bio ?: "", userData?.email ?: "", uri)
+                authViewModel.updateUserProfile(userData?.name ?: "",
+                    userData?.bio ?: "", userData?.email ?: "", uri)
             },
             showUsernameDialog = showUsernameDialog,
             showPasswordDialog = showPasswordDialog,
@@ -81,8 +93,10 @@ fun Profile(navHostController: NavHostController) {
     } else {
         LandscapeProfileLayout(
             userData = userData,
+            userTaskTitles = userTaskTitles,
             onUpdateProfilePicture = { uri ->
-                authViewModel.updateUserProfile(userData?.name ?: "", userData?.bio ?: "", userData?.email ?: "", uri)
+                authViewModel.updateUserProfile(userData?.name ?: "",
+                    userData?.bio ?: "", userData?.email ?: "", uri)
             },
             showUsernameDialog = showUsernameDialog,
             showPasswordDialog = showPasswordDialog,
@@ -121,6 +135,7 @@ fun Profile(navHostController: NavHostController) {
 @Composable
 fun PortraitProfileLayout(
     userData: UserModel?,
+    userTaskTitles: List<String>,
     onUpdateProfilePicture: (Uri?) -> Unit,
     showUsernameDialog: Boolean,
     showPasswordDialog: Boolean,
@@ -140,6 +155,10 @@ fun PortraitProfileLayout(
     ) {
         ProfileContent(userData, onUpdateProfilePicture)
         Spacer(modifier = Modifier.height(32.dp))
+        //Display task titles
+        TaskTitlesSection(userTaskTitles)
+
+        Spacer(modifier = Modifier.height(32.dp))
         ProfileButtons(onShowUsernameDialog, onShowPasswordDialog, onLogout)
     }
 }
@@ -147,6 +166,7 @@ fun PortraitProfileLayout(
 @Composable
 fun LandscapeProfileLayout(
     userData: UserModel?,
+    userTaskTitles: List<String>,
     onUpdateProfilePicture: (Uri?) -> Unit,
     showUsernameDialog: Boolean,
     showPasswordDialog: Boolean,
@@ -156,17 +176,105 @@ fun LandscapeProfileLayout(
 ) {
     val scrollState = rememberScrollState()
 
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
+
+    Column (modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(scrollState)
+        .padding(16.dp)
+    ){
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Column (modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+                .border(1.dp, Color.Gray.copy(alpha = 0.1f),
+                    RoundedCornerShape(8.dp))
+                .background(Color.White, RoundedCornerShape(8.dp))
+                .padding(16.dp),
+                horizontalAlignment = Alignment.Start)
+            {
+                Text(
+                    text = "Assigned Tasks",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                ProfileContent(userData, onUpdateProfilePicture)
+            }
+
+            Column (modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp)
+                .border(1.dp, Color.Gray.copy(alpha = 0.1f),
+                    RoundedCornerShape(8.dp))
+                .background(Color.White, RoundedCornerShape(8.dp))
+                .padding(16.dp),
+                horizontalAlignment = Alignment.Start)
+            {
+                Text(
+                    text = "Assigned Tasks",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                TaskTitlesSection(userTaskTitles)
+            }
+        }
+        Column (modifier = Modifier
+            .weight(1f)
+            .padding(end = 8.dp)
+            .border(1.dp, Color.Gray.copy(alpha = 0.1f),
+                RoundedCornerShape(8.dp))
+            .background(Color.White, RoundedCornerShape(8.dp))
             .padding(16.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.Top
-    ) {
-        ProfileContent(userData, onUpdateProfilePicture)
-        Spacer(modifier = Modifier.width(32.dp))
-        ProfileButtons(onShowUsernameDialog, onShowPasswordDialog, onLogout)
+            horizontalAlignment = Alignment.Start)
+        {
+            Text(
+                text = "Assigned Tasks",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            ProfileButtons(onShowUsernameDialog, onShowPasswordDialog,
+                onLogout)
+        }
+    }
+
+}
+
+@Composable
+fun TaskTitlesSection(userTaskTitles: List<String>) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Assigned Tasks:",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        userTaskTitles.forEach { title ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.primary)
+                    .padding(8.dp),
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 
@@ -179,7 +287,8 @@ fun ProfileContent(
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     // Image picker launcher
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        uri: Uri? ->
         if (uri != null) {
             imageUri = uri
             onUpdateProfilePicture(uri)

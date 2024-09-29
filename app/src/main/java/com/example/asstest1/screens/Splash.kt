@@ -36,7 +36,7 @@ fun Splash(navController: NavHostController) {
                 bottom.linkTo(parent.bottom)
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
-            }.size(500.dp)
+            }.size(450.dp)
         )
     }
 
@@ -45,7 +45,7 @@ fun Splash(navController: NavHostController) {
         delay(3000)
 
         if (FirebaseAuth.getInstance().currentUser!= null)
-        navController.navigate(Routes.BottomNav.route){
+        navController.navigate(Routes.Home.route){
             popUpTo(navController.graph.startDestinationId)
             launchSingleTop = true
         }

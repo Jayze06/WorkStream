@@ -21,8 +21,10 @@ fun NavGraph(
         composable("login") { Login(navController) }
         composable(Routes.Register.route) { Register(navController) }
         composable(Routes.Home.route) { Home(navController) }
+        composable(Routes.Splash.route){ Splash(navController) }
         composable(Routes.Tasks.route) { Tasks(navController) }
-        composable(Routes.AddThreads.route) { AddThreads(navController) }
+        //(Routes.AddThreads.route) { AddThreads(navController) } //add discussion
+        composable(Routes.AddDiscussions.route) { AddDiscussions(navController) }
         composable(Routes.Profile.route) { Profile(navController) }
         composable("${Routes.TaskDetail.route}/{taskId}") { backStackEntry ->
             val taskId = backStackEntry.arguments?.getString("taskId") ?: ""

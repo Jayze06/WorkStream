@@ -29,7 +29,8 @@ fun MyBottomBar(navController: NavHostController) {
     val list = listOf(
         BottomNavItem("Home", Routes.Home.route, Icons.Rounded.Home),
         BottomNavItem("Tasks", Routes.Tasks.route, Icons.Rounded.Menu), // Dashboard icon for Tasks
-        BottomNavItem("Threads", Routes.AddThreads.route, Icons.Rounded.Share), // Speech bubble icon for Threads
+        //BottomNavItem("Threads", Routes.AddThreads.route, Icons.Rounded.Share), // Speech bubble icon for Threads
+        BottomNavItem("Discussion", Routes.AddDiscussions.route, Icons.Rounded.Share), // Speech bubble icon for Discussion
         BottomNavItem("Profile", Routes.Profile.route, Icons.Rounded.Person)
     )
 
