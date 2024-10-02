@@ -30,14 +30,14 @@ class AddDiscussionViewModel : ViewModel() {
     val isPosted: LiveData<Boolean> = _isPosted
 
     fun saveImage(
-        thread: String,
+        discussion: String,
         userId: String,
         imageUri: Uri,
         ) {
         val uploadTask = imageRef.putFile(imageUri)
         uploadTask.addOnSuccessListener {
             imageRef.downloadUrl.addOnSuccessListener {
-                saveData(thread, userId, it.toString())
+                saveData(discussion, userId, it.toString())
             }
         }
     }

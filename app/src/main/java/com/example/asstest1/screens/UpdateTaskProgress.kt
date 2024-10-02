@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import com.example.asstest1.viewmodel.TaskViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateTaskProgress(navController: NavController, taskId: String) {
     val taskViewModel: TaskViewModel = viewModel()
@@ -41,13 +42,31 @@ fun UpdateTaskProgress(navController: NavController, taskId: String) {
     val users by taskViewModel.users.observeAsState(emptyList())
     val memberProgress = remember { mutableStateMapOf<String, Int>() }
 
+    // State for showing the dialog
+    var showDialog by remember { mutableStateOf(false) }
+    // Parameters to pass to the dialog
+    var dialogMemberId by remember { mutableStateOf("") }
+    var dialogMemberName by remember { mutableStateOf("") }
+    var dialogIncrease by remember { mutableStateOf(true) }
+
     LaunchedEffect(task) {
         task?.assignedMembers?.forEach { (memberId, progress) ->
-            memberProgress[memberId] = progress.toInt()
+            memberProgress[memberId] = progress.toInt() // Convert Long to Int
         }
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+//        topBar = {
+//            CenterAlignedTopAppBar(
+//                title = { Text("Update Task Progress") },
+//                navigationIcon = {
+//                    IconButton(onClick = { navController.popBackStack() }) {
+//                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+//                    }
+//                }
+//            )
+//        }
+    ) { innerPadding ->
         if (task == null || users.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -75,7 +94,7 @@ fun UpdateTaskProgress(navController: NavController, taskId: String) {
                     )
                 }
 
-                items(task.assignedMembers.toList()) { (memberId, memberProgress) ->
+                items(task.assignedMembers.toList()) { (memberId, progress) ->
                     val user = users.find { it.uid == memberId }
 
                     Row(
@@ -91,16 +110,56 @@ fun UpdateTaskProgress(navController: NavController, taskId: String) {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$memberProgress% progress",
+                            text = "$progress% progress",
                             style = MaterialTheme.typography.bodyMedium
                         )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Plus button
+                        Button(
+                            onClick = {
+                                dialogMemberId = memberId
+                                dialogMemberName = user?.name ?: "User not found"
+                                dialogIncrease = true
+                                showDialog = true
+                            }
+                        ) {
+                            Text("+")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Minus button
+                        Button(
+                            onClick = {
+                                dialogMemberId = memberId
+                                dialogMemberName = user?.name ?: "User not found"
+                                dialogIncrease = false
+                                showDialog = true
+                            }
+                        ) {
+                            Text("-")
+                        }
                     }
                 }
             }
         }
+
+        // Show the dialog if the state is true
+        if (showDialog) {
+            showNumpadDialog(
+                memberName = dialogMemberName,
+                memberId = dialogMemberId,
+                memberProgress = memberProgress,
+                increase = dialogIncrease,
+                taskId = taskId,
+                taskViewModel = taskViewModel,
+                onDismiss = { showDialog = false }
+            )
+        }
     }
 }
-
 
 @Composable
 fun showNumpadDialog(

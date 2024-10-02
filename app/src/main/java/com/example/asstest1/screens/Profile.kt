@@ -31,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -443,6 +445,7 @@ fun ProfileButtons(
     }
 }
 
+
 @Composable
 fun ProfileDialog(
     currentName: String,
@@ -502,6 +505,15 @@ fun PasswordDialog(
 ) {
     var currentPass by remember { mutableStateOf("") }
     var newPass by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) } // State for showing password
+
+    // Password validation function
+    fun isValidPassword(password: String): Boolean {
+        val hasUpperCase = password.any { it.isUpperCase() }
+        val hasSymbol = password.any { !it.isLetterOrDigit() }
+        return password.length >= 6 && hasUpperCase && hasSymbol
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -512,21 +524,66 @@ fun PasswordDialog(
                     value = currentPass,
                     onValueChange = { currentPass = it },
                     label = { Text("Current Password") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = currentPass.isBlank() // Show error if current password is empty
                 )
+                if (currentPass.isBlank()) {
+                    Text(
+                        text = "Current password cannot be empty",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 TextField(
                     value = newPass,
                     onValueChange = { newPass = it },
                     label = { Text("New Password") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = !isValidPassword(newPass) // Show error if new password is invalid
                 )
+                if (!isValidPassword(newPass)) {
+                    Text(
+                        text = "Password must be at least 6 characters, " +
+                                "contain at least one uppercase letter, and one symbol.",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Show Password checkbox
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = showPassword,
+                        onCheckedChange = { showPassword = it }
+                    )
+                    Text("Show Password")
+                }
+
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(currentPass, newPass) }) {
+            Button(onClick = {
+                if (currentPass.isNotBlank() && isValidPassword(newPass)) {
+                    onConfirm(currentPass, newPass) // Handle password update
+                    errorMessage = "" // Clear error message
+                } else {
+                    errorMessage = "Please fix the errors before proceeding"
+                }
+            }) {
                 Text("Update Password")
             }
         },
